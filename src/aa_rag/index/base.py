@@ -15,7 +15,7 @@ class BaseIndex:
     def __init__(
         self,
         knowledge_name: str,
-        db_path: str = dfs.VECTOR_DB_PATH,
+        db_path: str = dfs.INDEX_VECTOR_DB_PATH,
         embedding_model: EmbeddingModel = dfs.EMBEDDING_MODEL,
         **kwargs,
     ):

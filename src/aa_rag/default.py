@@ -1,22 +1,20 @@
-# vector db path
 from aa_rag.gtypes.enums import IndexType, EmbeddingModel, DBMode, RetrieveType
 
-VECTOR_DB_PATH = "./lancedb"
-
+# vector db path
+INDEX_VECTOR_DB_PATH = "./lancedb"
 # index type
 INDEX_TYPE = IndexType.CHUNK
+# chunk size
+INDEX_CHUNK_SIZE = 256
+# chunk overlap
+INDEX_OVERLAP_SIZE = 100
+# db mode
+INDEX_DB_MODE = DBMode.DEINSERT
 
 # embedding model
 EMBEDDING_MODEL = EmbeddingModel.TEXT_EMBEDDING_3_SMALL
 
-# chunk size
-INDEX_CHUNK_SIZE = 256
 
-# chunk overlap
-INDEX_OVERLAP_SIZE = 100
-
-# db mode
-DB_MODE = DBMode.DEINSERT
 
 # retrieve type
 RETRIEVE_TYPE = RetrieveType.HYBRID

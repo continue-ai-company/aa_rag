@@ -13,7 +13,7 @@ class BaseRetrieve:
         self,
         knowledge_name: str,
         index_type: IndexType,
-        db_path: str = dfs.VECTOR_DB_PATH,
+        db_path: str = dfs.INDEX_VECTOR_DB_PATH,
         embedding_model: EmbeddingModel = dfs.EMBEDDING_MODEL,
         **kwargs,
     ):

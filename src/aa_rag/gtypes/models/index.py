@@ -21,8 +21,8 @@ class IndexItem(BaseModel):
 class ChunkIndexItem(IndexItem):
     file_path: FilePath = Field(default=..., examples=["./data/fairy_tale.txt"])
     db_mode: DBMode = Field(
-        default=dfs.DB_MODE,
-        examples=[dfs.DB_MODE],
+        default=dfs.INDEX_DB_MODE,
+        examples=[dfs.INDEX_DB_MODE],
         description="Mode for inserting data to db",
     )
     chunk_size: int = Field(
