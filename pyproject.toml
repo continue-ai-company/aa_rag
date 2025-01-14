@@ -1,0 +1,30 @@
+[project]
+name = "aa-rag"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "jarlor", email = "jarlorzhang@outlook.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi[standard]>=0.115.6",
+    "lancedb==0.17.0",
+    "langchain==0.3.14",
+    "langchain-community==0.3.14",
+    "langchain-core==0.3.29",
+    "langchain-openai==0.2.14",
+    "markitdown==0.0.1a3",
+    "openai==1.59.3",
+    "python-dotenv==1.0.1",
+    "rank-bm25>=0.2.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "jupyter>=1.1.1",
+]
