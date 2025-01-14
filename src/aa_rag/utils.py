@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from langchain_core.embeddings import Embeddings
@@ -54,6 +55,7 @@ def get_embedding_model(model_name: EmbeddingModel) -> Embeddings:
     """
     match model_name:
         case EmbeddingModel.TEXT_EMBEDDING_3_SMALL:
+            assert "OPENAI_API_KEY" in os.environ, "OPENAI_API_KEY is not set"
             embeddings = OpenAIEmbeddings(model=model_name.value)
         case _:
             raise ValueError(f"Invalid model name: {model_name}")
