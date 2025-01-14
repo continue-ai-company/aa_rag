@@ -56,7 +56,7 @@ class ChunkIndex(BaseIndex):
             List[str]: List of document id what be inserted.
         """
         assert self.indexed_data, "Can not store because indexed data is empty."
-        assert self.db, "Can not store because db is empty."
+        # assert self.db, "Can not store because db is empty."
 
         # detects whether the metadata has an id field. If not, it will be generated id based on page_content via md5 algorithm.
         id_s = [

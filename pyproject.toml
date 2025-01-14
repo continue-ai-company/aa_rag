@@ -1,7 +1,7 @@
 [project]
 name = "aa-rag"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.1.1"
+description = "RAG server for ai2apps."
 readme = "README.md"
 authors = [
     { name = "jarlor", email = "jarlorzhang@outlook.com" }
