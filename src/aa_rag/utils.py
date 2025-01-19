@@ -55,9 +55,14 @@ def get_embedding_model(model_name: EmbeddingModel) -> Embeddings:
     """
     match model_name:
         case EmbeddingModel.TEXT_EMBEDDING_3_SMALL:
-            assert setting.openai.api_key, "OpenAI API key is required for using OpenAI embeddings."
-            embeddings = OpenAIEmbeddings(model=model_name.value, openai_api_key=setting.openai.api_key,
-                                          openai_api_base=setting.openai.base_url)
+            assert setting.openai.api_key, (
+                "OpenAI API key is required for using OpenAI embeddings."
+            )
+            embeddings = OpenAIEmbeddings(
+                model=model_name.value,
+                openai_api_key=setting.openai.api_key,
+                openai_api_base=setting.openai.base_url,
+            )
         case _:
             raise ValueError(f"Invalid model name: {model_name}")
     return embeddings

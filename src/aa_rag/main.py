@@ -20,9 +20,6 @@ async def root():
 
 
 def startup():
-    import dotenv
     import uvicorn
-
-    dotenv.load_dotenv(dotenv.find_dotenv())
 
     uvicorn.run(app, host=setting.server.host, port=setting.server.port)

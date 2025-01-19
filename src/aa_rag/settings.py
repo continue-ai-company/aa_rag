@@ -122,7 +122,9 @@ class Settings(BaseSettings):
         description="Retrieval strategy configuration settings.",
     )
 
-    model_config = SettingsConfigDict(env_file=".env", env_nested_delimiter="_", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", env_nested_delimiter="_", extra="ignore"
+    )
 
 
 setting = Settings()
