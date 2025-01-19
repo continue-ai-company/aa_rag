@@ -3,7 +3,7 @@ from typing import List, Union, Any
 import lancedb
 from langchain_core.documents import Document
 
-from aa_rag import default as dfs
+from aa_rag import setting
 from aa_rag import utils
 from aa_rag.gtypes import IndexType, EmbeddingModel
 
@@ -15,8 +15,8 @@ class BaseIndex:
     def __init__(
         self,
         knowledge_name: str,
-        db_path: str = dfs.INDEX_VECTOR_DB_PATH,
-        embedding_model: EmbeddingModel = dfs.EMBEDDING_MODEL,
+        db_path: str = setting.db.vector.uri,
+        embedding_model: EmbeddingModel = setting.embedding.model,
         **kwargs,
     ):
         self._table_name = f"{knowledge_name}_{self.index_type}_{embedding_model}"

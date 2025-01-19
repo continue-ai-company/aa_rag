@@ -3,6 +3,7 @@ from typing import List, Dict
 from langchain_community.retrievers import BM25Retriever
 from langchain_core.documents import Document
 
+from aa_rag import setting
 from aa_rag.gtypes.enums import RetrieveType, IndexType
 from aa_rag.retrieve.base import BaseRetrieve
 
@@ -16,8 +17,8 @@ class BM25Retrieve(BaseRetrieve):
     def retrieve(
         self,
         query: str,
-        top_k: int = 3,
-        only_page_content: bool = False,
+        top_k: int = setting.retrieve.k,
+        only_page_content: bool = setting.retrieve.only_page_content,
         **kwargs,
     ) -> List[Dict | str]:
         """

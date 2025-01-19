@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import ValidationError
 
+from aa_rag import setting
 from aa_rag.exceptions import *
 from aa_rag.router import qa, solution, index, retrieve
 
@@ -16,3 +17,12 @@ app.add_exception_handler(AssertionError, handle_assertion_error)
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+
+def startup():
+    import dotenv
+    import uvicorn
+
+    dotenv.load_dotenv(dotenv.find_dotenv())
+
+    uvicorn.run(app, host=setting.server.host, port=setting.server.port)

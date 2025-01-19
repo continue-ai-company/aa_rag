@@ -5,7 +5,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import LanceDB
 from langchain_core.documents import Document
 
-from aa_rag import default as dfs
+from aa_rag import setting
 from aa_rag import utils
 from aa_rag.gtypes import IndexType
 from aa_rag.gtypes.enums import DBMode
@@ -18,8 +18,8 @@ class ChunkIndex(BaseIndex):
     def __init__(
         self,
         knowledge_name: str,
-        chunk_size=dfs.INDEX_CHUNK_SIZE,
-        chunk_overlap=dfs.INDEX_OVERLAP_SIZE,
+        chunk_size=setting.index.chunk_size,
+        chunk_overlap=setting.index.overlap_size,
         **kwargs,
     ):
         super().__init__(knowledge_name, **kwargs)
@@ -40,7 +40,7 @@ class ChunkIndex(BaseIndex):
         )
         self._indexed_data = splitter.split_documents(source_docs)
 
-    def store(self, mode=DBMode.DEINSERT) -> List[str]:
+    def store(self, mode=setting.db.mode) -> List[str]:
         """
         Insert documents to vector db.
 

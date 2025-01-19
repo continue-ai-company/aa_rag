@@ -1,1 +1,3 @@
-from .main import app
+from .settings import setting
+
+from .main import startup

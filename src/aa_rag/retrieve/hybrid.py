@@ -5,7 +5,7 @@ from langchain_community.retrievers import BM25Retriever
 from langchain_community.vectorstores import LanceDB
 from langchain_core.documents import Document
 
-from aa_rag import default as dfs
+from aa_rag import setting
 from aa_rag.gtypes.enums import RetrieveType, IndexType
 from aa_rag.retrieve.base import BaseRetrieve
 
@@ -19,10 +19,10 @@ class HybridRetrieve(BaseRetrieve):
     def retrieve(
         self,
         query: str,
-        top_k: int = 3,
-        only_page_content: bool = False,
-        dense_weight: float = dfs.RETRIEVE_HYBRID_DENSE_WEIGHT,
-        sparse_weight: float = dfs.RETRIEVE_HYBRID_SPARSE_WEIGHT,
+        top_k: int = setting.retrieve.k,
+        only_page_content: bool = setting.retrieve.only_page_content,
+        dense_weight: float = setting.retrieve.weight.dense,
+        sparse_weight: float = setting.retrieve.weight.sparse,
         **kwargs,
     ) -> List[Dict | str]:
         """

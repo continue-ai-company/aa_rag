@@ -1,7 +1,6 @@
 import lancedb
 
-from aa_rag import default as dfs
-from aa_rag import utils
+from aa_rag import utils, setting
 from aa_rag.gtypes import EmbeddingModel
 from aa_rag.gtypes.enums import RetrieveType, IndexType
 
@@ -13,8 +12,8 @@ class BaseRetrieve:
         self,
         knowledge_name: str,
         index_type: IndexType,
-        db_path: str = dfs.INDEX_VECTOR_DB_PATH,
-        embedding_model: EmbeddingModel = dfs.EMBEDDING_MODEL,
+        db_path: str = setting.db.vector.uri,
+        embedding_model: EmbeddingModel = setting.embedding.model,
         **kwargs,
     ):
         self._table_name = f"{knowledge_name}_{index_type}_{embedding_model}"

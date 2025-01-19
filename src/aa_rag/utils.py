@@ -1,12 +1,12 @@
-import os
+import hashlib
 from pathlib import Path
 
+from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_openai import OpenAIEmbeddings
 from markitdown import MarkItDown
-from langchain_core.documents import Document
-import hashlib
 
+from aa_rag import setting
 from aa_rag.gtypes.enums import EmbeddingModel
 
 
@@ -55,8 +55,9 @@ def get_embedding_model(model_name: EmbeddingModel) -> Embeddings:
     """
     match model_name:
         case EmbeddingModel.TEXT_EMBEDDING_3_SMALL:
-            assert "OPENAI_API_KEY" in os.environ, "OPENAI_API_KEY is not set"
-            embeddings = OpenAIEmbeddings(model=model_name.value)
+            assert setting.openai.api_key, "OpenAI API key is required for using OpenAI embeddings."
+            embeddings = OpenAIEmbeddings(model=model_name.value, openai_api_key=setting.openai.api_key,
+                                          openai_api_base=setting.openai.base_url)
         case _:
             raise ValueError(f"Invalid model name: {model_name}")
     return embeddings

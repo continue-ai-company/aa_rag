@@ -3,16 +3,18 @@ from typing import List
 from fastapi import status
 from pydantic import BaseModel, Field, ConfigDict, FilePath
 
-from aa_rag import default as dfs
-from aa_rag.gtypes import IndexType
+from aa_rag import setting
+from aa_rag.gtypes import IndexType, EmbeddingModel
 from aa_rag.gtypes.enums import DBMode
 
 
 class IndexItem(BaseModel):
     knowledge_name: str = Field(default=..., examples=["fairy_tale"])
-    index_type: IndexType = Field(default=dfs.INDEX_TYPE, examples=[dfs.INDEX_TYPE])
-    embedding_model: str = Field(
-        default=dfs.EMBEDDING_MODEL, examples=[dfs.EMBEDDING_MODEL]
+    index_type: IndexType = Field(
+        default=setting.index.type, examples=[setting.index.type]
+    )
+    embedding_model: EmbeddingModel = Field(
+        default=setting.embedding.model, examples=[setting.embedding.model]
     )
 
     model_config = ConfigDict(extra="allow")
@@ -21,17 +23,19 @@ class IndexItem(BaseModel):
 class ChunkIndexItem(IndexItem):
     file_path: FilePath = Field(default=..., examples=["./data/fairy_tale.txt"])
     db_mode: DBMode = Field(
-        default=dfs.INDEX_DB_MODE,
-        examples=[dfs.INDEX_DB_MODE],
+        default=setting.db.mode,
+        examples=[setting.db.mode],
         description="Mode for inserting data to db",
     )
     chunk_size: int = Field(
-        default=dfs.INDEX_CHUNK_SIZE, examples=[dfs.INDEX_CHUNK_SIZE]
+        default=setting.index.chunk_size, examples=[setting.index.chunk_size]
     )
     chunk_overlap: int = Field(
-        default=dfs.INDEX_OVERLAP_SIZE, examples=[dfs.INDEX_OVERLAP_SIZE]
+        default=setting.index.overlap_size, examples=[setting.index.overlap_size]
     )
-    index_type: IndexType = Field(default=dfs.INDEX_TYPE, examples=[dfs.INDEX_TYPE])
+    index_type: IndexType = Field(
+        default=setting.index.type, examples=[setting.index.type]
+    )
 
     model_config = ConfigDict(extra="forbid")
 

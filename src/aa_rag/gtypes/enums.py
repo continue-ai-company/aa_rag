@@ -16,7 +16,7 @@ class OpenAIModel(Enum):
 
 
 class EmbeddingModel(Enum):
-    TEXT_EMBEDDING_3_SMALL: str = OpenAIModel.TEXT_EMBEDDING_3_SMALL
+    TEXT_EMBEDDING_3_SMALL: str = OpenAIModel.TEXT_EMBEDDING_3_SMALL.value
 
     def __str__(self):
         return f"{self.value}"
