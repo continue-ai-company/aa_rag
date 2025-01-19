@@ -123,7 +123,7 @@ class Settings(BaseSettings):
     )
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_nested_delimiter="_", extra="ignore"
+        env_file=".env", env_nested_delimiter="_", extra="ignore", cli_parse_args=True, cli_prog_name="aa_rag"
     )
 
 
