@@ -19,6 +19,10 @@ async def root():
     return {"message": "Hello World"}
 
 
+@app.get("/default")
+async def default():
+    return setting.model_dump()
+
 def startup():
     import uvicorn
 
