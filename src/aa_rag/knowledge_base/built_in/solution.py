@@ -16,12 +16,7 @@ from aa_rag.knowledge_base.base import BaseKnowledge
 class SolutionKnowledge(BaseKnowledge):
     _knowledge_name = "Solution"
 
-    def __init__(self,
-                 env_info: dict,
-                 procedure: str,
-                 project_meta: Dict[str, Any],
-                 relation_db_path: str = setting.db.relation.uri,
-                 **kwargs):
+    def __init__(self, relation_db_path: str = setting.db.relation.uri, **kwargs):
         """
         Solution Knowledge Base. Built-in Knowledge Base.
         Args:
@@ -47,11 +42,9 @@ class SolutionKnowledge(BaseKnowledge):
                 project_meta TEXT NOT NULL)""")
         self.relation_db_conn.commit()
 
-        self.env_info = CompatibleEnv(**env_info)
-        self.project_meta = project_meta
-        self.procedure = procedure
-
-    async def _is_compatible_env(self, source_env_info: CompatibleEnv, target_env_info: CompatibleEnv) -> bool:
+    async def _is_compatible_env(
+        self, source_env_info: CompatibleEnv, target_env_info: CompatibleEnv
+    ) -> bool:
         """
         Check if the source environment is compatible with the target environment.
         Args:
@@ -77,7 +70,7 @@ class SolutionKnowledge(BaseKnowledge):
 
                     --Result--
                     result:
-                    """
+                    """,
                 )
             ]
         )
@@ -86,7 +79,7 @@ class SolutionKnowledge(BaseKnowledge):
         result = await chain.ainvoke(
             {
                 "source_env_info": json.dumps(source_env_info.model_dump()),
-                "target_env_info": json.dumps(target_env_info.model_dump())
+                "target_env_info": json.dumps(target_env_info.model_dump()),
             }
         )
         try:
@@ -109,7 +102,7 @@ class SolutionKnowledge(BaseKnowledge):
             cursor.execute(f"""
                 SELECT project_id,guides,project_meta
                  FROM {self.relation_table_name}
-                WHERE json_extract(project_meta, '$.name') = '{project_meta['name']}'
+                WHERE json_extract(project_meta, '$.name') = '{project_meta["name"]}'
             """)
             result = cursor.fetchone()
             if result:
@@ -118,15 +111,22 @@ class SolutionKnowledge(BaseKnowledge):
                 return None
             if guide_s_str:
                 guide_s: List[Guide] = [
-                    Guide(procedure=json.loads(_)['procedure'],
-                          compatible_env=CompatibleEnv(**json.loads(_)['compatible_env']))
-                    for _ in json.loads(guide_s_str)]
-                return Project(**{"guides": guide_s, **json.loads(project_meta_str)}, id=project_id)
+                    Guide(
+                        procedure=json.loads(_)["procedure"],
+                        compatible_env=CompatibleEnv(**json.loads(_)["compatible_env"]),
+                    )
+                    for _ in json.loads(guide_s_str)
+                ]
+                return Project(
+                    **{"guides": guide_s, **json.loads(project_meta_str)}, id=project_id
+                )
 
             else:
                 return None
 
-    async def _merge_procedure(self, source_procedure: str, target_procedure: str) -> str:
+    async def _merge_procedure(
+        self, source_procedure: str, target_procedure: str
+    ) -> str:
         """
         Merge the source procedure with the target procedure.
         Args:
@@ -150,17 +150,14 @@ class SolutionKnowledge(BaseKnowledge):
                     target_procedure: {target_procedure}
                     --Result--
                     merged_procedure:
-                    """
+                    """,
                 )
             ]
         )
 
         chain = prompt_template | self.llm | StrOutputParser()
         result: str = await chain.ainvoke(
-            {
-                "source_procedure": source_procedure,
-                "target_procedure": target_procedure
-            }
+            {"source_procedure": source_procedure, "target_procedure": target_procedure}
         )
 
         return result
@@ -179,46 +176,75 @@ class SolutionKnowledge(BaseKnowledge):
 
         with closing(self.relation_db_conn.cursor()) as cursor:
             guides_json = json.dumps([_.model_dump_json() for _ in project.guides])
-            project_meta_json = project.model_dump_json(exclude={'guides', 'id'}, exclude_none=True)
+            project_meta_json = project.model_dump_json(
+                exclude={"guides", "id"}, exclude_none=True
+            )
             if project.id is None:
-                cursor.execute(f"""
+                cursor.execute(
+                    f"""
                     INSERT INTO {self.relation_table_name} (guides, project_meta)
-                    VALUES (?, ?)""", (guides_json, project_meta_json))
+                    VALUES (?, ?)""",
+                    (guides_json, project_meta_json),
+                )
             else:
-                cursor.execute(f"""
+                cursor.execute(
+                    f"""
                     UPDATE {self.relation_table_name}
                     SET guides = ?, project_meta = ?
                     WHERE project_id = ?
-                """, (guides_json, project_meta_json, project.id))
+                """,
+                    (guides_json, project_meta_json, project.id),
+                )
 
             self.relation_db_conn.commit()
 
             affected_rows = cursor.rowcount
         return affected_rows
 
-    async def index(self):
-        project = self._get_project_in_db(self.project_meta)
+    async def index(
+        self, env_info: CompatibleEnv, procedure: str, project_meta: Dict[str, Any]
+    ):
+        project = self._get_project_in_db(project_meta)
         if project:
             for guide in project.guides:
-                is_compatible: bool = await self._is_compatible_env(self.env_info, guide.compatible_env)
+                is_compatible: bool = await self._is_compatible_env(
+                    env_info, guide.compatible_env
+                )
                 if is_compatible:
                     # merge the procedure
-                    merged_procedure = await self._merge_procedure(guide.procedure, self.procedure)
+                    merged_procedure = await self._merge_procedure(
+                        guide.procedure, procedure
+                    )
                     # update the guide
                     guide.procedure = merged_procedure
                     break
             else:  # if not compatible, create a new guide
-                guide = Guide(procedure=self.procedure, compatible_env=self.env_info)
+                guide = Guide(procedure=procedure, compatible_env=env_info)
                 project.guides.append(guide)
 
-
-
         else:  # create a new project
-            guide = Guide(procedure=self.procedure, compatible_env=self.env_info)
-            project = Project(guides=[guide], **self.project_meta)
+            guide = Guide(procedure=procedure, compatible_env=env_info)
+            project = Project(guides=[guide], **project_meta)
 
         # push the project to the database
         self._project_to_db(project)
 
-    def retrieve(self, **kwargs) -> List[Any]:
+    def retrieve(
+        self, env_info: CompatibleEnv, project_meta: Dict[str, Any]
+    ) -> List[Any]:
         pass
+
+
+if __name__ == "__main__":
+    solution = SolutionKnowledge()
+    env_info = CompatibleEnv(platform="Linux", arch="x86_64")
+
+    project_meta = {
+        "name": "ai3apps",
+        "description": "AI2Apps is a project that uses AI to generate apps.",
+    }
+    procedure = "The deployment procedure of the solution."
+
+    result = asyncio.run(solution.index(env_info, procedure, project_meta))
+
+    print(result)

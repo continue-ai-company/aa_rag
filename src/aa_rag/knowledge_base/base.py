@@ -9,10 +9,10 @@ class BaseKnowledge:
     _knowledge_name: str
 
     def __init__(
-            self,
-            llm: LLModel = setting.llm.model,
-            embedding_model: EmbeddingModel = setting.embedding.model,
-            **kwargs,
+        self,
+        llm: LLModel = setting.llm.model,
+        embedding_model: EmbeddingModel = setting.embedding.model,
+        **kwargs,
     ):
         self.llm = utils.get_llm(llm)
         self.embedding_model = utils.get_embedding_model(embedding_model)

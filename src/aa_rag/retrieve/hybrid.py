@@ -41,7 +41,9 @@ class HybridRetrieve(BaseRetrieve):
 
         # dense retrieval
         dense_retriever = LanceDB(
-            connection=self.vector_db, table_name=self.table_name, embedding=self.embeddings
+            connection=self.vector_db,
+            table_name=self.table_name,
+            embedding=self.embeddings,
         ).as_retriever()
 
         # sparse retrieval

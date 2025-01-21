@@ -62,7 +62,8 @@ class DB(BaseModel):
 
     class Relation(BaseModel):
         uri: str = Field(
-            default="./db/sqlite.db", description="URI for the relational database location."
+            default="./db/sqlite.db",
+            description="URI for the relational database location.",
         )
 
         mode: DBMode = Field(
@@ -76,6 +77,7 @@ class DB(BaseModel):
     relation: Relation = Field(
         default_factory=Relation, description="Configuration for the document database."
     )
+
 
 class Embedding(BaseModel):
     model: EmbeddingModel = Field(
