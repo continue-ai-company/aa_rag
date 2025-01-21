@@ -7,7 +7,8 @@ RAG Server for [AI2APPS](https://github.com/Avdpro/ai2apps). This server provide
 
 ## Requirements
 
-1. **OpenAI API Key**: The server exclusively supports OpenAI’s API keys.
+**The current service supports only the OpenAI interface style**
+1. **OpenAI API Key**:
    - Ensure your `.env` file includes the following line:
      ```
      OPENAI_API_KEY=<your_openai_api_key>
@@ -36,16 +37,22 @@ RAG Server for [AI2APPS](https://github.com/Avdpro/ai2apps). This server provide
 1. **Start the Web Server**:
    - Run the following command:
      ```bash
-     uvicorn main:app --host 0.0.0.0 --port 8000
+     aarag
      ```
+   - if you want to change the port or host, you can use like this:
+     ```bash
+     aarag -server.host 127.0.0.1 --server.port 8788
+     ```
+   You can also run `aarag -h` to see the available options.
+2. 
 
 2. **Access the API Documentation**:
    - Once the server starts, open your browser and navigate to:
      ```
-     http://localhost:8000/docs
+     http://localhost:222/docs
      ```
    - This page provides an interactive Swagger UI to explore and test all available APIs.
-
+   - You can navigate to the `/default` endpoint to watch the default parameters and the available models.
 ---
 
 ## Features
