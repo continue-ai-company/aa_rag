@@ -31,4 +31,5 @@ aarag = "aa_rag:startup"
 [dependency-groups]
 dev = [
     "jupyter>=1.1.1",
+    "pandas>=2.2.3",
 ]
