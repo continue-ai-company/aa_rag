@@ -35,7 +35,7 @@ class BM25Retrieve(BaseRetrieve):
 
         # sparse retriever
         all_docs = (
-            self.db.open_table(self.table_name)
+            self.vector_db.open_table(self.table_name)
             .search()
             .to_pandas()[["text", "metadata"]]
             .apply(

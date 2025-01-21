@@ -35,7 +35,7 @@ class DenseRetrieve(BaseRetrieve):
 
         # dense retrieval
         dense_retriever = LanceDB(
-            connection=self.db, table_name=self.table_name, embedding=self.embeddings
+            connection=self.vector_db, table_name=self.table_name, embedding=self.embeddings
         )
 
         result: List[Document] = dense_retriever.similarity_search(query, k=top_k)

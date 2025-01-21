@@ -3,11 +3,12 @@ from pathlib import Path
 
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
-from langchain_openai import OpenAIEmbeddings
+from langchain_core.language_models import BaseChatModel
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from markitdown import MarkItDown
 
 from aa_rag import setting
-from aa_rag.gtypes.enums import EmbeddingModel
+from aa_rag.gtypes.enums import EmbeddingModel, LLModel
 
 
 def parse_file(file_path: Path) -> Document:
@@ -66,3 +67,29 @@ def get_embedding_model(model_name: EmbeddingModel) -> Embeddings:
         case _:
             raise ValueError(f"Invalid model name: {model_name}")
     return embeddings
+
+
+def get_llm(model_name: LLModel) -> BaseChatModel:
+    match model_name:
+        case LLModel.GPT_4O:
+            assert setting.openai.api_key, (
+                "OpenAI API key is required for using OpenAI embeddings."
+            )
+            model = ChatOpenAI(
+                model_name=model_name.value,
+                openai_api_key=setting.openai.api_key,
+                openai_api_base=setting.openai.base_url,
+            )
+        case LLModel.GPT_4O_MINI:
+            assert setting.openai.api_key, (
+                "OpenAI API key is required for using OpenAI embeddings."
+            )
+            model = ChatOpenAI(
+                model_name=model_name.value,
+                openai_api_key=setting.openai.api_key,
+                openai_api_base=setting.openai.base_url,
+            )
+        case _:
+            raise ValueError(f"Invalid model name: {model_name}")
+
+    return model

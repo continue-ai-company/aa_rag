@@ -12,14 +12,14 @@ class BaseRetrieve:
         self,
         knowledge_name: str,
         index_type: IndexType,
-        db_path: str = setting.db.vector.uri,
+        vector_db_path: str = setting.db.vector.uri,
         embedding_model: EmbeddingModel = setting.embedding.model,
         **kwargs,
     ):
         self._table_name = f"{knowledge_name}_{index_type}_{embedding_model}"
-        self._db = lancedb.connect(db_path)
+        self._vector_db = lancedb.connect(vector_db_path)
 
-        assert self.table_name in self.db.table_names(), (
+        assert self.table_name in self.vector_db.table_names(), (
             f"Table not found: {self.table_name}"
         )
 
@@ -30,8 +30,8 @@ class BaseRetrieve:
         return self._table_name
 
     @property
-    def db(self):
-        return self._db
+    def vector_db(self):
+        return self._vector_db
 
     @property
     def embeddings(self):

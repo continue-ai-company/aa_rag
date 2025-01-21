@@ -23,6 +23,7 @@ async def root():
 async def default():
     return setting.model_dump()
 
+
 def startup():
     import uvicorn
 

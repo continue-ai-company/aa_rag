@@ -41,12 +41,12 @@ class HybridRetrieve(BaseRetrieve):
 
         # dense retrieval
         dense_retriever = LanceDB(
-            connection=self.db, table_name=self.table_name, embedding=self.embeddings
+            connection=self.vector_db, table_name=self.table_name, embedding=self.embeddings
         ).as_retriever()
 
         # sparse retrieval
         all_docs = (
-            self.db.open_table(self.table_name)
+            self.vector_db.open_table(self.table_name)
             .search()
             .to_pandas()[["text", "metadata"]]
             .apply(

@@ -23,8 +23,8 @@ class IndexItem(BaseModel):
 class ChunkIndexItem(IndexItem):
     file_path: FilePath = Field(default=..., examples=["./data/fairy_tale.txt"])
     db_mode: DBMode = Field(
-        default=setting.db.mode,
-        examples=[setting.db.mode],
+        default=setting.db.vector.mode,
+        examples=[setting.db.vector.mode],
         description="Mode for inserting data to db",
     )
     chunk_size: int = Field(

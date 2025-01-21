@@ -40,7 +40,7 @@ class ChunkIndex(BaseIndex):
         )
         self._indexed_data = splitter.split_documents(source_docs)
 
-    def store(self, mode=setting.db.mode) -> List[str]:
+    def store(self, mode=setting.db.vector.mode) -> List[str]:
         """
         Insert documents to vector db.
 
@@ -66,24 +66,24 @@ class ChunkIndex(BaseIndex):
         # bind id to metadata.
         [doc.metadata.update({"id": id_}) for doc, id_ in zip(self.indexed_data, id_s)]
         # forced modify mode to `insert` if table not exist. insert data directly.
-        if self.table_name not in self.db.table_names():
+        if self.table_name not in self.vector_db.table_names():
             mode = DBMode.INSERT
 
         match mode:
             case DBMode.INSERT:
                 vector_store = LanceDB(
-                    connection=self.db,
+                    connection=self.vector_db,
                     embedding=self.embeddings,
                     table_name=self.table_name,
                     mode="append",
                 )
                 return vector_store.add_documents(self.indexed_data, ids=id_s)
             case DBMode.DEINSERT:
-                assert self.table_name in self.db.table_names(), (
+                assert self.table_name in self.vector_db.table_names(), (
                     f"Table not found: {self.table_name}"
                 )
                 vector_store = LanceDB(
-                    connection=self.db,
+                    connection=self.vector_db,
                     embedding=self.embeddings,
                     table_name=self.table_name,
                     mode="append",
@@ -106,18 +106,18 @@ class ChunkIndex(BaseIndex):
                 )
             case DBMode.OVERWRITE:
                 vector_store = LanceDB(
-                    connection=self.db,
+                    connection=self.vector_db,
                     embedding=self.embeddings,
                     table_name=self.table_name,
                     mode="overwrite",
                 )
                 return vector_store.add_documents(self.indexed_data, ids=id_s)
             case DBMode.UPSERT:
-                assert self.table_name in self.db.table_names(), (
+                assert self.table_name in self.vector_db.table_names(), (
                     f"Table not found: {self.table_name}"
                 )
                 vector_store = LanceDB(
-                    connection=self.db,
+                    connection=self.vector_db,
                     embedding=self.embeddings,
                     table_name=self.table_name,
                     mode="append",

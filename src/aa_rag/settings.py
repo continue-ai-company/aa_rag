@@ -4,7 +4,13 @@ import os
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from aa_rag.gtypes.enums import IndexType, EmbeddingModel, DBMode, RetrieveType
+from aa_rag.gtypes.enums import (
+    IndexType,
+    EmbeddingModel,
+    DBMode,
+    RetrieveType,
+    LLModel,
+)
 
 
 def load_env(key: str, default=None):
@@ -50,17 +56,37 @@ class DB(BaseModel):
             default="./db/lancedb", description="URI for the vector database location."
         )
 
+        mode: DBMode = Field(
+            default=DBMode.DEINSERT, description="Mode of operation for the database."
+        )
+
+    class Relation(BaseModel):
+        uri: str = Field(
+            default="./db/sqlite.db", description="URI for the relational database location."
+        )
+
+        mode: DBMode = Field(
+            default=DBMode.DEINSERT, description="Mode of operation for the database."
+        )
+
     vector: Vector = Field(
         default_factory=Vector, description="Configuration for the vector database."
     )
-    mode: DBMode = Field(
-        default=DBMode.DEINSERT, description="Mode of operation for the database."
-    )
 
+    relation: Relation = Field(
+        default_factory=Relation, description="Configuration for the document database."
+    )
 
 class Embedding(BaseModel):
     model: EmbeddingModel = Field(
         default=EmbeddingModel.TEXT_EMBEDDING_3_SMALL,
+        description="Model used for generating text embeddings.",
+    )
+
+
+class LanguageModel(BaseModel):
+    model: LLModel = Field(
+        default=LLModel.GPT_4O,
         description="Model used for generating text embeddings.",
     )
 
@@ -122,8 +148,17 @@ class Settings(BaseSettings):
         description="Retrieval strategy configuration settings.",
     )
 
+    llm: LanguageModel = Field(
+        default_factory=LanguageModel,
+        description="Language model configuration settings.",
+    )
+
     model_config = SettingsConfigDict(
-        env_file=".env", env_nested_delimiter="_", extra="ignore", cli_parse_args=True, cli_prog_name="aa_rag"
+        env_file=".env",
+        env_nested_delimiter="_",
+        extra="ignore",
+        cli_parse_args=True,
+        cli_prog_name="aa_rag",
     )
 
 

@@ -15,12 +15,12 @@ class BaseIndex:
     def __init__(
         self,
         knowledge_name: str,
-        db_path: str = setting.db.vector.uri,
+        vector_db_path: str = setting.db.vector.uri,
         embedding_model: EmbeddingModel = setting.embedding.model,
         **kwargs,
     ):
         self._table_name = f"{knowledge_name}_{self.index_type}_{embedding_model}"
-        self._db = lancedb.connect(db_path)
+        self._vector_db = lancedb.connect(vector_db_path)
         self._embeddings = utils.get_embedding_model(embedding_model)
 
     @property
@@ -36,8 +36,8 @@ class BaseIndex:
         return self._table_name
 
     @property
-    def db(self):
-        return self._db
+    def vector_db(self):
+        return self._vector_db
 
     @property
     def embeddings(self):
