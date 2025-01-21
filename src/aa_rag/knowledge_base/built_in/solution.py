@@ -108,8 +108,8 @@ class SolutionKnowledge(BaseKnowledge):
             if guide_s_str:
                 guide_s: List[Guide] = [
                     Guide(
-                        procedure=json.loads(_)["procedure"],
-                        compatible_env=CompatibleEnv(**json.loads(_)["compatible_env"]),
+                        procedure=_["procedure"],
+                        compatible_env=CompatibleEnv(**_["compatible_env"]),
                     )
                     for _ in json.loads(guide_s_str)
                 ]
@@ -169,7 +169,9 @@ class SolutionKnowledge(BaseKnowledge):
         # if project.id is None, insert the project, otherwise update the project
 
         with closing(self.relation_db_conn.cursor()) as cursor:
-            guides_json = json.dumps([_.model_dump_json() for _ in project.guides])
+            guides_json = json.dumps(
+                [_.model_dump() for _ in project.guides], ensure_ascii=False
+            )
             project_meta_json = project.model_dump_json(
                 exclude={"guides", "id"}, exclude_none=True
             )
