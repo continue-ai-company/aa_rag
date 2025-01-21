@@ -20,9 +20,6 @@ class SolutionKnowledge(BaseKnowledge):
         """
         Solution Knowledge Base. Built-in Knowledge Base.
         Args:
-            env_info: The environment information in dict format.
-            procedure: The deployment procedure of the solution.
-            project_meta: The project meta information in dict format.
             relation_db_path: The path of the relation database.
             **kwargs: The keyword arguments.
         """
@@ -203,7 +200,18 @@ class SolutionKnowledge(BaseKnowledge):
 
     async def index(
         self, env_info: CompatibleEnv, procedure: str, project_meta: Dict[str, Any]
-    ):
+    ) -> int:
+        """
+        Index the solution to the knowledge base.
+        Args:
+            env_info: Environment information.
+            procedure: The deployment procedure of the solution.
+            project_meta: The project meta information.
+
+        Returns:
+            affected_rows: The number of affected rows.
+
+        """
         project = self._get_project_in_db(project_meta)
         if project:
             for guide in project.guides:
@@ -227,7 +235,7 @@ class SolutionKnowledge(BaseKnowledge):
             project = Project(guides=[guide], **project_meta)
 
         # push the project to the database
-        self._project_to_db(project)
+        return self._project_to_db(project)
 
     def retrieve(
         self, env_info: CompatibleEnv, project_meta: Dict[str, Any]

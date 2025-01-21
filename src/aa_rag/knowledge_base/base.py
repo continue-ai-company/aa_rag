@@ -21,9 +21,6 @@ class BaseKnowledge:
     def knowledge_name(self):
         return self._knowledge_name
 
-    def is_duplicated(self, **kwargs) -> bool:
-        return NotImplemented
-
     def index(self, **kwargs):
         return NotImplemented
 
