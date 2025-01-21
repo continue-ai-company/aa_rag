@@ -1,4 +1,3 @@
-import asyncio
 import json
 import sqlite3
 from contextlib import closing
@@ -237,22 +236,17 @@ class SolutionKnowledge(BaseKnowledge):
         # push the project to the database
         return self._project_to_db(project)
 
-    def retrieve(
+    async def retrieve(
         self, env_info: CompatibleEnv, project_meta: Dict[str, Any]
-    ) -> List[Any]:
-        pass
-
-
-if __name__ == "__main__":
-    solution = SolutionKnowledge()
-    env_info = CompatibleEnv(platform="Linux", arch="x86_64")
-
-    project_meta = {
-        "name": "ai3apps",
-        "description": "AI2Apps is a project that uses AI to generate apps.",
-    }
-    procedure = "The deployment procedure of the solution."
-
-    result = asyncio.run(solution.index(env_info, procedure, project_meta))
-
-    print(result)
+    ) -> Guide | None:
+        # check if there is the same project name in db
+        project: Project = self._get_project_in_db(project_meta)
+        if project:
+            for guide in project.guides:
+                is_compatible: bool = await self._is_compatible_env(
+                    env_info, guide.compatible_env
+                )
+                if is_compatible:
+                    return guide
+        else:
+            return None
