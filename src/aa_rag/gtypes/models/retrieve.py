@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from aa_rag import setting
 from aa_rag.gtypes import IndexType, EmbeddingModel
 from aa_rag.gtypes.enums import RetrieveType
+from aa_rag.gtypes.models.base import BaseResponse
 
 
 class RetrieveItem(BaseModel):
@@ -52,12 +53,10 @@ class BM25RetrieveItem(RetrieveItem):
     model_config = ConfigDict(extra="forbid")
 
 
-class RetrieveResponse(BaseModel):
+class RetrieveResponse(BaseResponse):
     class Data(BaseModel):
         documents: list = Field(default=..., examples=[[]])
 
-    code: int = Field(..., examples=[200])
-    status: str = Field(default="success", examples=["success"])
     message: str = Field(
         default="Retrieval completed via BaseRetrieve", examples=["Retrieval completed"]
     )

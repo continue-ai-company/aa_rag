@@ -8,7 +8,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
 from aa_rag import setting
-from aa_rag.gtypes.models.solution import CompatibleEnv, Project, Guide
+from aa_rag.gtypes.models.knowlege_base.solution import CompatibleEnv, Project, Guide
 from aa_rag.knowledge_base.base import BaseKnowledge
 
 
@@ -38,7 +38,7 @@ class SolutionKnowledge(BaseKnowledge):
                 project_meta TEXT NOT NULL)""")
         self.relation_db_conn.commit()
 
-    async def _is_compatible_env(
+    def _is_compatible_env(
         self, source_env_info: CompatibleEnv, target_env_info: CompatibleEnv
     ) -> bool:
         """
@@ -72,7 +72,7 @@ class SolutionKnowledge(BaseKnowledge):
         )
 
         chain = prompt_template | self.llm | StrOutputParser()
-        result = await chain.ainvoke(
+        result = chain.invoke(
             {
                 "source_env_info": json.dumps(source_env_info.model_dump()),
                 "target_env_info": json.dumps(target_env_info.model_dump()),
@@ -120,9 +120,7 @@ class SolutionKnowledge(BaseKnowledge):
             else:
                 return None
 
-    async def _merge_procedure(
-        self, source_procedure: str, target_procedure: str
-    ) -> str:
+    def _merge_procedure(self, source_procedure: str, target_procedure: str) -> str:
         """
         Merge the source procedure with the target procedure.
         Args:
@@ -152,7 +150,7 @@ class SolutionKnowledge(BaseKnowledge):
         )
 
         chain = prompt_template | self.llm | StrOutputParser()
-        result: str = await chain.ainvoke(
+        result: str = chain.invoke(
             {"source_procedure": source_procedure, "target_procedure": target_procedure}
         )
 
@@ -197,8 +195,8 @@ class SolutionKnowledge(BaseKnowledge):
             affected_rows = cursor.rowcount
         return affected_rows
 
-    async def index(
-        self, env_info: CompatibleEnv, procedure: str, project_meta: Dict[str, Any]
+    def index(
+        self, env_info: Dict[str, Any], procedure: str, project_meta: Dict[str, Any]
     ) -> int:
         """
         Index the solution to the knowledge base.
@@ -211,17 +209,17 @@ class SolutionKnowledge(BaseKnowledge):
             affected_rows: The number of affected rows.
 
         """
+        env_info = CompatibleEnv(**env_info)
+
         project = self._get_project_in_db(project_meta)
         if project:
             for guide in project.guides:
-                is_compatible: bool = await self._is_compatible_env(
+                is_compatible: bool = self._is_compatible_env(
                     env_info, guide.compatible_env
                 )
                 if is_compatible:
                     # merge the procedure
-                    merged_procedure = await self._merge_procedure(
-                        guide.procedure, procedure
-                    )
+                    merged_procedure = self._merge_procedure(guide.procedure, procedure)
                     # update the guide
                     guide.procedure = merged_procedure
                     break
@@ -236,14 +234,15 @@ class SolutionKnowledge(BaseKnowledge):
         # push the project to the database
         return self._project_to_db(project)
 
-    async def retrieve(
-        self, env_info: CompatibleEnv, project_meta: Dict[str, Any]
+    def retrieve(
+        self, env_info: Dict[str, Any], project_meta: Dict[str, Any]
     ) -> Guide | None:
+        env_info: CompatibleEnv = CompatibleEnv(**env_info)
         # check if there is the same project name in db
         project: Project = self._get_project_in_db(project_meta)
         if project:
             for guide in project.guides:
-                is_compatible: bool = await self._is_compatible_env(
+                is_compatible: bool = self._is_compatible_env(
                     env_info, guide.compatible_env
                 )
                 if is_compatible:

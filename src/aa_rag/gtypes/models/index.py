@@ -1,11 +1,11 @@
 from typing import List
 
-from fastapi import status
 from pydantic import BaseModel, Field, ConfigDict, FilePath
 
 from aa_rag import setting
 from aa_rag.gtypes import IndexType, EmbeddingModel
 from aa_rag.gtypes.enums import DBMode
+from aa_rag.gtypes.models.base import BaseResponse
 
 
 class IndexItem(BaseModel):
@@ -40,14 +40,12 @@ class ChunkIndexItem(IndexItem):
     model_config = ConfigDict(extra="forbid")
 
 
-class IndexResponse(BaseModel):
+class IndexResponse(BaseResponse):
     class Data(BaseModel):
         affect_row_id: List[str] = Field(default=..., examples=[[]])
         affect_row_num: int = Field(default=..., examples=[0])
         table_name: str = Field(..., examples=["fairy_tale_chunk_text_embedding_model"])
 
-    code: int = Field(..., examples=[status.HTTP_200_OK])
-    status: str = Field(default="success", examples=["success"])
     message: str = Field(
         default="Indexing completed via ChunkIndex",
         examples=["Indexing completed via ChunkIndex"],
