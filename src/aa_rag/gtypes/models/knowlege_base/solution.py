@@ -52,7 +52,9 @@ class SolutionIndexItem(BaseKnowledgeItem):
 
 class SolutionRetrieveItem(BaseKnowledgeItem):
     env_info: CompatibleEnv = Field(..., description="The environment information")
-    project_meta: Project = Field(..., description="The project meta information")
+    project_meta: SolutionIndexItem.Project_Meta = Field(
+        ..., description="The project meta information"
+    )
 
 
 class SolutionIndexResponse(BaseResponse):
@@ -69,7 +71,7 @@ class SolutionIndexResponse(BaseResponse):
 
 class SolutionRetrieveResponse(BaseResponse):
     class Data(BaseModel):
-        guide: Guide = Field(
+        guide: Guide | None = Field(
             default=...,
             examples=[
                 Guide(
