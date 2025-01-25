@@ -27,6 +27,7 @@ class SolutionKnowledge(BaseKnowledge):
         # create the directory and file if not exist
         relation_db_path_obj = Path(relation_db_path)
         if not relation_db_path_obj.exists():
+            relation_db_path_obj.parent.mkdir(parents=True, exist_ok=True)
             relation_db_path_obj.touch()
         # create the connection and create the table if not exist
         self.relation_db_conn = sqlite3.connect(relation_db_path)
