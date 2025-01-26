@@ -1,5 +1,3 @@
-from typing import List
-
 from pydantic import BaseModel, Field, ConfigDict, FilePath
 
 from aa_rag import setting
@@ -42,8 +40,6 @@ class ChunkIndexItem(IndexItem):
 
 class IndexResponse(BaseResponse):
     class Data(BaseModel):
-        affect_row_id: List[str] = Field(default=..., examples=[[]])
-        affect_row_num: int = Field(default=..., examples=[0])
         table_name: str = Field(..., examples=["fairy_tale_chunk_text_embedding_model"])
 
     message: str = Field(
