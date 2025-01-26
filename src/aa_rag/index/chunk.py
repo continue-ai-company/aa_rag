@@ -1,8 +1,6 @@
 from typing import List, Union
 
-from lancedb.table import Table
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import LanceDB
 from langchain_core.documents import Document
 
 from aa_rag import setting
@@ -48,8 +46,6 @@ class ChunkIndex(BaseIndex):
             mode (str, optional): Insert method. Defaults to 'deinsert'.
 
                 - `insert`: Insert new documents to db directly without removing duplicate.
-                - `deinsert`: Remove duplicate documents by id then insert new documents to db.
-                - `overwrite`: Remove all documents in db then insert new documents to db.
                 - `upsert`: Insert new documents to db, if document existed, update it.
 
         Returns:
@@ -63,70 +59,38 @@ class ChunkIndex(BaseIndex):
             doc.metadata.get("id", utils.calculate_md5(doc.page_content))
             for doc in self.indexed_data
         ]
-        # bind id to metadata.
-        [doc.metadata.update({"id": id_}) for doc, id_ in zip(self.indexed_data, id_s)]
-        # forced modify mode to `insert` if table not exist. insert data directly.
-        if self.table_name not in self.vector_db.table_names():
-            mode = DBMode.INSERT
+
+        text_vector_s = self.embeddings.embed_documents(
+            [_.page_content for _ in self.indexed_data]
+        )
+        data = []
+
+        for id_, vector, doc in zip(id_s, text_vector_s, self.indexed_data):
+            data.append(
+                {
+                    "id": id_,
+                    "vector": vector,
+                    "text": doc.page_content,
+                    "metadata": doc.metadata,
+                }
+            )
 
         match mode:
             case DBMode.INSERT:
-                vector_store = LanceDB(
-                    connection=self.vector_db,
-                    embedding=self.embeddings,
-                    table_name=self.table_name,
-                    mode="append",
-                )
-                return vector_store.add_documents(self.indexed_data, ids=id_s)
-            case DBMode.DEINSERT:
-                assert self.table_name in self.vector_db.table_names(), (
-                    f"Table not found: {self.table_name}"
-                )
-                vector_store = LanceDB(
-                    connection=self.vector_db,
-                    embedding=self.embeddings,
-                    table_name=self.table_name,
-                    mode="append",
-                )
-                table: Table = vector_store.get_table()
-                # find the old data by id field and de-weight it.
-                ids_str = ", ".join(map(lambda x: f"'{x}'", id_s))
-                query_str = f"id IN ({ids_str})"
-                hit_id_s = table.search().where(query_str).to_pandas()["id"].to_list()
-                remain_id_s = list(set(id_s) - set(hit_id_s))
-                remain_docs = [
-                    doc
-                    for doc in self.indexed_data
-                    if doc.metadata["id"] in remain_id_s
-                ]
-                if not remain_docs:
-                    return []
-                return vector_store.add_documents(
-                    remain_docs, ids=[doc.metadata["id"] for doc in remain_docs]
-                )
-            case DBMode.OVERWRITE:
-                vector_store = LanceDB(
-                    connection=self.vector_db,
-                    embedding=self.embeddings,
-                    table_name=self.table_name,
-                    mode="overwrite",
-                )
-                return vector_store.add_documents(self.indexed_data, ids=id_s)
-            case DBMode.UPSERT:
-                assert self.table_name in self.vector_db.table_names(), (
-                    f"Table not found: {self.table_name}"
-                )
-                vector_store = LanceDB(
-                    connection=self.vector_db,
-                    embedding=self.embeddings,
-                    table_name=self.table_name,
-                    mode="append",
-                )
-                table = vector_store.get_table()
+                with self.vector_db.get_table(self.table_name) as table:
+                    table.add(data)
+                return id_s
 
+            case DBMode.UPSERT:
                 ids_str = ", ".join(map(lambda x: f"'{x}'", id_s))
-                query_str = f"id IN ({ids_str})"
-                table.delete(where=query_str)
-                return vector_store.add_documents(self.indexed_data, ids=id_s)
+                where_str = f"id IN ({ids_str})"
+
+                with self.vector_db.get_table(self.table_name) as table:
+                    table.upsert(data, duplicate_where=where_str)
+
+            case DBMode.OVERWRITE:
+                with self.vector_db.get_table(self.table_name) as table:
+                    table.overwrite(data)
+
             case _:
                 raise ValueError(f"Invalid mode: {mode}")

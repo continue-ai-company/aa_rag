@@ -26,15 +26,12 @@ async def chunk_index(item: ChunkIndexItem) -> IndexResponse:
     source_docs = utils.parse_file(item.file_path)
 
     indexer.index(source_docs)
-    affected_row_id_s = indexer.store(mode=item.db_mode)
-
+    indexer.store(mode=item.db_mode)
     return IndexResponse(
         code=200,
         status="success",
         message="Indexing completed via ChunkIndex",
         data=IndexResponse.Data(
-            affect_row_id=affected_row_id_s,
-            affect_row_num=len(affected_row_id_s),
             table_name=indexer.table_name,
         ),
     )

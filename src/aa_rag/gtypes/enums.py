@@ -43,9 +43,16 @@ class RetrieveType(Enum):
 
 class DBMode(Enum):
     INSERT = "insert"
-    DEINSERT = "deinsert"
     OVERWRITE = "overwrite"
     UPSERT = "upsert"
+
+    def __str__(self):
+        return f"{self.value}"
+
+
+class VectorDBType(Enum):
+    LANCE: str = "lance"
+    MILVUS: str = "milvus"
 
     def __str__(self):
         return f"{self.value}"

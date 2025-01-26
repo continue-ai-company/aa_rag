@@ -33,18 +33,17 @@ class BM25Retrieve(BaseRetrieve):
             List[Dict|str]: List of retrieved documents.
         """
 
-        # sparse retriever
-        all_docs = (
-            self.vector_db.open_table(self.table_name)
-            .search()
-            .to_pandas()[["text", "metadata"]]
-            .apply(
-                lambda x: Document(page_content=x["text"], metadata=x["metadata"]),
-                axis=1,
+        with self.vector_db.get_table(self.table_name) as table:
+            all_doc_df = table.select(where="1=1")
+            all_doc_s = (
+                all_doc_df[["text", "metadata"]]
+                .apply(
+                    lambda x: Document(page_content=x["text"], metadata=x["metadata"]),
+                    axis=1,
+                )
+                .tolist()
             )
-            .tolist()
-        )
-        sparse_retriever = BM25Retriever.from_documents(all_docs)
+        sparse_retriever = BM25Retriever.from_documents(all_doc_s)
         sparse_retriever.k = top_k
 
         result: List[Document] = sparse_retriever.invoke(query)

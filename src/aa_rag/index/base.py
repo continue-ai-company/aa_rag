@@ -1,11 +1,13 @@
 from typing import List, Union, Any
 
-import lancedb
+from lancedb.pydantic import LanceModel, Vector
 from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
 
 from aa_rag import setting
 from aa_rag import utils
 from aa_rag.gtypes import IndexType, EmbeddingModel
+from aa_rag.gtypes.enums import VectorDBType
 
 
 class BaseIndex:
@@ -15,13 +17,34 @@ class BaseIndex:
     def __init__(
         self,
         knowledge_name: str,
-        vector_db_path: str = setting.db.vector.uri,
+        vector_db: VectorDBType = VectorDBType.LANCE,
         embedding_model: EmbeddingModel = setting.embedding.model,
         **kwargs,
     ):
         self._table_name = f"{knowledge_name}_{self.index_type}_{embedding_model}"
-        self._vector_db = lancedb.connect(vector_db_path)
-        self._embeddings = utils.get_embedding_model(embedding_model)
+
+        self._vector_db = utils.get_vector_db(vector_db)
+        self._embeddings, dimensions = utils.get_embedding_model(
+            embedding_model, return_dim=True
+        )
+
+        if self.table_name not in self.vector_db.table_list():
+            # create table if not exist
+            class TableModel(LanceModel):
+                id: str
+                vector: Vector(dimensions)
+                text: str
+
+                class MetaData(LanceModel):
+                    source: str
+
+                metadata: MetaData
+
+            self._vector_db.create_table(
+                self.table_name, schema=TableModel.to_arrow_schema()
+            )
+        else:
+            pass
 
     @property
     def indexed_data(self):
@@ -40,7 +63,7 @@ class BaseIndex:
         return self._vector_db
 
     @property
-    def embeddings(self):
+    def embeddings(self) -> Embeddings:
         return self._embeddings
 
     def index(self, source_docs: Union[Document | List[Document]]):

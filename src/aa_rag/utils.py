@@ -8,7 +8,9 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from markitdown import MarkItDown
 
 from aa_rag import setting
-from aa_rag.gtypes.enums import EmbeddingModel, LLModel
+from aa_rag.db import LanceDB
+from aa_rag.db.base import BaseVectorDataBase
+from aa_rag.gtypes.enums import EmbeddingModel, LLModel, VectorDBType
 
 
 def parse_file(file_path: Path) -> Document:
@@ -44,14 +46,18 @@ def calculate_md5(input_string: str) -> str:
     return md5_hash.hexdigest()
 
 
-def get_embedding_model(model_name: EmbeddingModel) -> Embeddings:
+def get_embedding_model(
+    model_name: EmbeddingModel, return_dim: bool = False
+) -> Embeddings | tuple[Embeddings, int]:
     """
     Get the embedding model based on the model name.
     Args:
         model_name (EmbeddingModel): Model name.
+        return_dim (bool): Return the embedding dimension if True.
 
     Returns:
         Embeddings: Embedding model instance.
+        If return_dim is True, also returns the number of dimensions.
 
     """
     match model_name:
@@ -66,7 +72,10 @@ def get_embedding_model(model_name: EmbeddingModel) -> Embeddings:
             )
         case _:
             raise ValueError(f"Invalid model name: {model_name}")
-    return embeddings
+    if return_dim:
+        return embeddings, embeddings.dimensions or 1536
+    else:
+        return embeddings
 
 
 def get_llm(model_name: LLModel) -> BaseChatModel:
@@ -93,3 +102,13 @@ def get_llm(model_name: LLModel) -> BaseChatModel:
             raise ValueError(f"Invalid model name: {model_name}")
 
     return model
+
+
+def get_vector_db(db_type: VectorDBType) -> BaseVectorDataBase:
+    match db_type:
+        case VectorDBType.LANCE:
+            return LanceDB()
+        case VectorDBType.MILVUS:
+            pass
+        case _:
+            raise ValueError(f"Invalid db type: {db_type}")

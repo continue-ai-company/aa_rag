@@ -41,23 +41,23 @@ class HybridRetrieve(BaseRetrieve):
 
         # dense retrieval
         dense_retriever = LanceDB(
-            connection=self.vector_db,
+            connection=self.vector_db.connection,
             table_name=self.table_name,
             embedding=self.embeddings,
         ).as_retriever()
 
         # sparse retrieval
-        all_docs = (
-            self.vector_db.open_table(self.table_name)
-            .search()
-            .to_pandas()[["text", "metadata"]]
-            .apply(
-                lambda x: Document(page_content=x["text"], metadata=x["metadata"]),
-                axis=1,
+        with self.vector_db.get_table(self.table_name) as table:
+            all_doc_df = table.select(where="1=1")
+            all_doc_s = (
+                all_doc_df[["text", "metadata"]]
+                .apply(
+                    lambda x: Document(page_content=x["text"], metadata=x["metadata"]),
+                    axis=1,
+                )
+                .tolist()
             )
-            .tolist()
-        )
-        sparse_retrieval = BM25Retriever.from_documents(all_docs)
+        sparse_retrieval = BM25Retriever.from_documents(all_doc_s)
 
         # combine the results
         ensemble_retriever = EnsembleRetriever(

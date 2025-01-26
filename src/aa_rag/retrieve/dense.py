@@ -35,7 +35,7 @@ class DenseRetrieve(BaseRetrieve):
 
         # dense retrieval
         dense_retriever = LanceDB(
-            connection=self.vector_db,
+            connection=self.vector_db.connection,
             table_name=self.table_name,
             embedding=self.embeddings,
         )

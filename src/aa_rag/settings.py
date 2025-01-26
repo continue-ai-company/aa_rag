@@ -57,7 +57,7 @@ class DB(BaseModel):
         )
 
         mode: DBMode = Field(
-            default=DBMode.DEINSERT, description="Mode of operation for the database."
+            default=DBMode.UPSERT, description="Mode of operation for the database."
         )
 
     class Relation(BaseModel):
@@ -67,7 +67,7 @@ class DB(BaseModel):
         )
 
         mode: DBMode = Field(
-            default=DBMode.DEINSERT, description="Mode of operation for the database."
+            default=DBMode.UPSERT, description="Mode of operation for the database."
         )
 
     vector: Vector = Field(
