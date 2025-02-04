@@ -102,7 +102,7 @@ You can choose one of the following installation methods: **uv** (recommended) o
 2. **Access the API Documentation:**
     - Open your browser and navigate to:
      ```
-     http://localhost:8000/docs
+     http://localhost:222/docs
      ```
    - This page provides an interactive Swagger UI to explore and test all available APIs.
 
