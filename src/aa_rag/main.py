@@ -28,3 +28,7 @@ def startup():
     import uvicorn
 
     uvicorn.run(app, host=setting.server.host, port=setting.server.port)
+
+
+if __name__ == "__main__":
+    startup()

@@ -1,8 +1,11 @@
 import ast
 import os
 
+import dotenv
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+dotenv.load_dotenv(dotenv.find_dotenv())
 
 from aa_rag.gtypes.enums import (
     IndexType,
@@ -60,9 +63,9 @@ class DB(BaseModel):
             default=DBMode.UPSERT, description="Mode of operation for the database."
         )
 
-    class Relation(BaseModel):
+    class NoSQL(BaseModel):
         uri: str = Field(
-            default="./db/sqlite.db",
+            default="./db/db.json",
             description="URI for the relational database location.",
         )
 
@@ -74,8 +77,8 @@ class DB(BaseModel):
         default_factory=Vector, description="Configuration for the vector database."
     )
 
-    relation: Relation = Field(
-        default_factory=Relation, description="Configuration for the document database."
+    nosql: NoSQL = Field(
+        default_factory=NoSQL, description="Configuration for the document database."
     )
 
 
@@ -160,7 +163,9 @@ class Settings(BaseSettings):
         env_nested_delimiter="_",
         extra="ignore",
         cli_parse_args=True,
-        cli_prog_name="aa_rag",
+        cli_avoid_json=True,
+        cli_prog_name="aarag",
+        cli_ignore_unknown_args=True,
     )
 
 

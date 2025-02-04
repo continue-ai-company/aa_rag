@@ -16,8 +16,10 @@ dependencies = [
     "langchain-openai==0.2.14",
     "markitdown==0.0.1a3",
     "openai==1.59.3",
+    "pandas>=2.2.3",
     "python-dotenv==1.0.1",
     "rank-bm25>=0.2.2",
+    "tinydb>=4.8.2",
 ]
 
 [build-system]
@@ -26,10 +28,9 @@ build-backend = "hatchling.build"
 
 
 [project.scripts]
-aarag = "aa_rag:startup"
+aarag = "aa_rag.main:startup"
 
 [dependency-groups]
 dev = [
-    "jupyter>=1.1.1",
-    "pandas>=2.2.3",
+    "jupyter>=1.1.1"
 ]

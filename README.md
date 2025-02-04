@@ -1,63 +1,113 @@
 # aa-rag
 
 ## Description
-RAG Server for [AI2APPS](https://github.com/Avdpro/ai2apps). This server provides a Retrieval-Augmented Generation (RAG) API to support advanced AI applications. It leverages OpenAI's API for its core functionality.
+
+RAG Server for [AI2APPS](https://github.com/Avdpro/ai2apps). This server provides a Retrieval-Augmented Generation (RAG)
+API to support advanced AI applications.
 
 ---
 
 ## Requirements
 
-**The current service supports only the OpenAI interface style**
-1. **OpenAI API Key**:
+1. **OpenAI API Key:**
+    - The service supports only the OpenAI interface style.
    - Ensure your `.env` file includes the following line:
      ```
      OPENAI_API_KEY=<your_openai_api_key>
      ```
 
-2. **Environment Setup**:
+2. **Environment Setup:**
    - Make sure your environment is properly configured to load environment variables from a `.env` file.
+   - For complete details on how to configure the application using environment variables and a `.env` file, please see
+     the [Configuration Parameters](CONFIGURATION.md) document.
 
 ---
 
 ## Installation
 
-1. Install the package from PyPI:
+### Installation via PyPI
+
+Install the package from PyPI:
+
+```bash
+pip install aa-rag
+```
+
+### Installation via Source Code
+
+You can choose one of the following installation methods: **uv** (recommended) or **requirements.txt**.
+
+#### Option 1: UV Installation (Recommended)
+
+1. **Install uv:**
+    - On macOS, it is recommended to use Homebrew:
+      ```bash
+      brew install uv
+      ```
+    - For other operating systems, please refer to
+      the [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/#pypi).
+
+2. **Clone the Repository:**
    ```bash
-   pip install aa-rag
+   git clone https://github.com/continue-ai-company/aa_rag.git
+   cd aa_rag
    ```
 
-2. Set up the `.env` file:
-   - Create a `.env` file in the root directory of your project.
-   - Add your OpenAI API key as described in the Requirements section.
+3. **Synchronize Dependencies:**
+    - Install dependencies as specified in the `uv.lock` file:
+      ```bash
+      uv sync
+      ```
+    - This command will create the virtual environment in the current project directory and install all necessary
+      dependencies.
+
+#### Option 2: Installation via requirements.txt
+
+1. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/continue-ai-company/aa_rag.git
+   cd aa_rag
+   ```
+
+2. **Environment Setup:**
+    - You can use your existing Python environment or create a new one, based on your preference.
+
+3. **Install Dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ---
 
 ## Usage
 
-1. **Start the Web Server**:
-   - Run the following command:
-     ```bash
-     aarag
-     ```
-   - if you want to change the port or host, you can use like this:
-     ```bash
-     aarag -server.host 127.0.0.1 --server.port 8788
-     ```
-   You can also run `aarag -h` to see the available options.
-2. 
+1. **Start the Web Server:**
+    - If you installed the package via PyPI, you can run the server using the following command:
+      ```bash
+      aarag
+      ```
+    - If you installed the package from source code and are using the `uv` tool, you can run the server using the following command:
+      ```bash
+      uv run aarag
+      ```
+    - If you installed the package from source code and are using the `requirements.txt` file, you can run the server using the following command:
+      ```bash
+        source ./.venv/bin/activate
+        python src/aa_rag/main.py
+        ```
 
-2. **Access the API Documentation**:
-   - Once the server starts, open your browser and navigate to:
+2. **Access the API Documentation:**
+    - Open your browser and navigate to:
      ```
-     http://localhost:222/docs
+     http://localhost:8000/docs
      ```
    - This page provides an interactive Swagger UI to explore and test all available APIs.
-   - You can navigate to the `/default` endpoint to watch the default parameters and the available models.
+
 ---
 
 ## Features
 
-- Fully supports OpenAI API integrations.
+- Full support for OpenAI API integrations.
 - Interactive API documentation using Swagger UI.
 - Simplified RAG workflow for AI applications.
 
@@ -65,7 +115,8 @@ RAG Server for [AI2APPS](https://github.com/Avdpro/ai2apps). This server provide
 
 ## GitHub
 
-Find the source code and related projects on [GitHub](https://github.com/jarlor/aa_rag) and [AI2APPS](https://github.com/Avdpro/ai2apps).
+Find the source code and related projects on [GitHub](https://github.com/continue-ai-company/aa_rag)
+and [AI2APPS](https://github.com/Avdpro/ai2apps).
 
 ---
 
@@ -77,7 +128,8 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Support
 
-For any issues or feature requests, please open a ticket in the [GitHub Issues](https://github.com/jarlor/aa_rag/issues).
+For any issues or feature requests, please open a ticket in
+the [GitHub Issues](https://github.com/continue-ai-company/aa_rag/issues).
 
 ---
 
@@ -89,6 +141,3 @@ We welcome contributions! Please follow these steps:
 2. Create a feature branch.
 3. Commit your changes.
 4. Submit a pull request.
-
----
-

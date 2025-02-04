@@ -8,7 +8,7 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from markitdown import MarkItDown
 
 from aa_rag import setting
-from aa_rag.db import LanceDB
+from aa_rag.db import LanceDBDataBase
 from aa_rag.db.base import BaseVectorDataBase
 from aa_rag.gtypes.enums import EmbeddingModel, LLModel, VectorDBType
 
@@ -104,10 +104,10 @@ def get_llm(model_name: LLModel) -> BaseChatModel:
     return model
 
 
-def get_vector_db(db_type: VectorDBType) -> BaseVectorDataBase:
+def get_vector_db(db_type: VectorDBType) -> BaseVectorDataBase | None:
     match db_type:
         case VectorDBType.LANCE:
-            return LanceDB()
+            return LanceDBDataBase()
         case VectorDBType.MILVUS:
             pass
         case _:
