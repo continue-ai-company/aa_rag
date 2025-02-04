@@ -10,12 +10,10 @@ from aa_rag import setting
 from aa_rag.db.base import BaseVectorDataBase
 
 
-class LanceDB(BaseVectorDataBase):
+class LanceDBDataBase(BaseVectorDataBase):
     _db_type = "LanceDB"
 
-    def __init__(self,
-                 uri: str = setting.db.vector.uri,
-                 **kwargs):
+    def __init__(self, uri: str = setting.db.vector.uri, **kwargs):
         self.uri = uri
         self._conn_obj = self.connect()
         super().__init__(**kwargs)
@@ -47,29 +45,36 @@ class LanceDB(BaseVectorDataBase):
         return self.connection.drop_table(table_name)
 
     def select(self, where: str = None, **kwargs) -> DataFrame:
-        assert self.table is not None, "Table object is not defined, please use `with db.get_table()` to use select method"
+        assert self.table is not None, (
+            "Table object is not defined, please use `with db.get_table()` to use select method"
+        )
 
         return self.table.search().where(where).to_pandas()
 
     def insert(self, data: list[dict] | DataFrame, **kwargs):
-        assert self.table is not None, "Table object is not defined, please use `with db.get_table()` to use insert method"
+        assert self.table is not None, (
+            "Table object is not defined, please use `with db.get_table()` to use insert method"
+        )
 
         self.table.add(data, **kwargs)
 
-    def update(self,
-               where: str,
-               values: dict,
-               **kwargs):
-        assert self.table is not None, "Table object is not defined, please use `with db.get_table()` to use update method"
+    def update(self, where: str, values: dict, **kwargs):
+        assert self.table is not None, (
+            "Table object is not defined, please use `with db.get_table()` to use update method"
+        )
 
         self.table.update(where=where, values=values, **kwargs)
 
     def delete(self, where: str):
-        assert self.table is not None, "Table object is not defined, please use `with db.get_table()` to use delete method"
+        assert self.table is not None, (
+            "Table object is not defined, please use `with db.get_table()` to use delete method"
+        )
 
         self.table.delete(where=where)
 
     def search(self, query_vector: List[float], top_k: int = 3, **kwargs):
-        assert self.table is not None, "Table object is not defined, please use `with db.get_table()` to use search method"
+        assert self.table is not None, (
+            "Table object is not defined, please use `with db.get_table()` to use search method"
+        )
 
         return self.table.search(query_vector).to_list()[:top_k]

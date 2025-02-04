@@ -13,7 +13,7 @@ class QAKnowledge(BaseKnowledge):
 
     def __init__(
         self,
-        relation_db_path: str = setting.db.relation.uri,
+        relation_db_path: str = setting.db.nosql.uri,
         vector_db_path: str = setting.db.vector.uri,
         **kwargs,
     ):

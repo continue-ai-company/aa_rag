@@ -15,7 +15,7 @@ from aa_rag.knowledge_base.base import BaseKnowledge
 class SolutionKnowledge(BaseKnowledge):
     _knowledge_name = "Solution"
 
-    def __init__(self, relation_db_path: str = setting.db.relation.uri, **kwargs):
+    def __init__(self, relation_db_path: str = setting.db.nosql.uri, **kwargs):
         """
         Solution Knowledge Base. Built-in Knowledge Base.
         Args:

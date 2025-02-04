@@ -50,7 +50,9 @@ class BaseDataBase:
         return NotImplemented
 
     def __enter__(self):
-        assert self.table is not None, "Table object is not defined, please use get_table() method to define it"
+        assert self.table is not None, (
+            "Table object is not defined, please use get_table() method to define it"
+        )
 
         return self
 
@@ -67,23 +69,24 @@ class BaseVectorDataBase(BaseDataBase):
     def insert(self, data: list[dict] | DataFrame, **kwargs):
         return NotImplemented
 
-    def update(self,
-               where: str,
-               values: dict,
-               **kwargs):
+    def update(self, where: str, values: dict, **kwargs):
         return NotImplemented
 
     def delete(self, where: str):
         return NotImplemented
 
     def upsert(self, data: list[dict] | DataFrame, duplicate_where, **kwargs):
-        assert self.table is not None, "Table object is not defined, please use `with db.get_table()` to use insert method"
+        assert self.table is not None, (
+            "Table object is not defined, please use `with db.get_table()` to use insert method"
+        )
 
         self.delete(duplicate_where)
         self.insert(data, **kwargs)
 
     def overwrite(self, data: list[dict] | DataFrame, **kwargs):
-        assert self.table is not None, "Table object is not defined, please use `with db.get_table()` to use overwrite method"
+        assert self.table is not None, (
+            "Table object is not defined, please use `with db.get_table()` to use overwrite method"
+        )
 
         self.delete(where="1=1")
         self.insert(data, **kwargs)
@@ -92,9 +95,9 @@ class BaseVectorDataBase(BaseDataBase):
         return NotImplemented
 
 
-class BaseRelationalDataBase(BaseDataBase):
+class BaseNoSQLDataBase(BaseDataBase):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def connect(self):
+    def create_table(self, table_name, **kwargs):
         return NotImplemented

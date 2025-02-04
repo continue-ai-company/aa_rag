@@ -46,7 +46,7 @@ class SolutionIndexItem(BaseKnowledgeItem):
 
     project_meta: Project_Meta = Field(..., description="The project meta information")
     relation_db_path: str = Field(
-        setting.db.relation.uri, description="The path of the relation database"
+        setting.db.nosql.uri, description="The path of the relation database"
     )
 
 

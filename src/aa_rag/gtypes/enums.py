@@ -56,3 +56,11 @@ class VectorDBType(Enum):
 
     def __str__(self):
         return f"{self.value}"
+
+
+class NoSQLDBType(Enum):
+    TINYDB: str = "tinydb"
+    MONGODB: str = "mongodb"
+
+    def __str__(self):
+        return f"{self.value}"
