@@ -1,8 +1,3 @@
-Below is the revised `CONFIGURATION.md` file with corrections in Sections 4 and 7 (they are now documented as strings
-rather than enums):
-
----
-
 # Configuration Parameters for aa-rag
 
 This document explains in detail how to configure the aa-rag project using environment variables and a `.env` file.
