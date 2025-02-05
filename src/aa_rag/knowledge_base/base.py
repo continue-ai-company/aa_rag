@@ -1,8 +1,6 @@
 from typing import Any, List
 
 from aa_rag import setting, utils
-from aa_rag.gtypes import EmbeddingModel
-from aa_rag.gtypes.enums import LLModel
 
 
 class BaseKnowledge:
@@ -10,8 +8,8 @@ class BaseKnowledge:
 
     def __init__(
         self,
-        llm: LLModel = setting.llm.model,
-        embedding_model: EmbeddingModel = setting.embedding.model,
+        llm: str = setting.llm.model,
+        embedding_model: str = setting.embedding.model,
         **kwargs,
     ):
         self.llm = utils.get_llm(llm)

@@ -35,7 +35,9 @@ async def index(item: SolutionIndexItem):
     return SolutionIndexResponse(
         code=200,
         status="success",
-        data=SolutionIndexResponse.Data(affect_row_num=affect_row_num_s),
+        data=SolutionIndexResponse.Data(
+            affect_row_num=affect_row_num_s, table_name="solution"
+        ),
     )
 
 

@@ -81,7 +81,7 @@ class SolutionKnowledge(BaseKnowledge):
         )
         try:
             result = bool(result)
-        except:
+        except Exception:
             result = False
         return result
 

@@ -10,7 +10,7 @@ from markitdown import MarkItDown
 from aa_rag import setting
 from aa_rag.db import LanceDBDataBase
 from aa_rag.db.base import BaseVectorDataBase
-from aa_rag.gtypes.enums import EmbeddingModel, LLModel, VectorDBType
+from aa_rag.gtypes.enums import VectorDBType
 
 
 def parse_file(file_path: Path) -> Document:
@@ -47,12 +47,12 @@ def calculate_md5(input_string: str) -> str:
 
 
 def get_embedding_model(
-    model_name: EmbeddingModel, return_dim: bool = False
+    model_name: str, return_dim: bool = False
 ) -> Embeddings | tuple[Embeddings, int]:
     """
     Get the embedding model based on the model name.
     Args:
-        model_name (EmbeddingModel): Model name.
+        model_name (str): Model name.
         return_dim (bool): Return the embedding dimension if True.
 
     Returns:
@@ -60,46 +60,30 @@ def get_embedding_model(
         If return_dim is True, also returns the number of dimensions.
 
     """
-    match model_name:
-        case EmbeddingModel.TEXT_EMBEDDING_3_SMALL:
-            assert setting.openai.api_key, (
-                "OpenAI API key is required for using OpenAI embeddings."
-            )
-            embeddings = OpenAIEmbeddings(
-                model=model_name.value,
-                openai_api_key=setting.openai.api_key,
-                openai_api_base=setting.openai.base_url,
-            )
-        case _:
-            raise ValueError(f"Invalid model name: {model_name}")
+    assert setting.openai.api_key, (
+        "OpenAI API key is required for using OpenAI embeddings."
+    )
+    embeddings = OpenAIEmbeddings(
+        model=model_name,
+        dimensions=1536,
+        api_key=setting.openai.api_key,
+        base_url=setting.openai.base_url,
+    )
     if return_dim:
         return embeddings, embeddings.dimensions or 1536
     else:
         return embeddings
 
 
-def get_llm(model_name: LLModel) -> BaseChatModel:
-    match model_name:
-        case LLModel.GPT_4O:
-            assert setting.openai.api_key, (
-                "OpenAI API key is required for using OpenAI embeddings."
-            )
-            model = ChatOpenAI(
-                model_name=model_name.value,
-                openai_api_key=setting.openai.api_key,
-                openai_api_base=setting.openai.base_url,
-            )
-        case LLModel.GPT_4O_MINI:
-            assert setting.openai.api_key, (
-                "OpenAI API key is required for using OpenAI embeddings."
-            )
-            model = ChatOpenAI(
-                model_name=model_name.value,
-                openai_api_key=setting.openai.api_key,
-                openai_api_base=setting.openai.base_url,
-            )
-        case _:
-            raise ValueError(f"Invalid model name: {model_name}")
+def get_llm(model_name: str) -> BaseChatModel:
+    assert setting.openai.api_key, (
+        "OpenAI API key is required for using OpenAI embeddings."
+    )
+    model = ChatOpenAI(
+        model=model_name,
+        api_key=setting.openai.api_key,
+        base_url=setting.openai.base_url,
+    )
 
     return model
 

@@ -38,7 +38,7 @@ class ChunkIndex(BaseIndex):
         )
         self._indexed_data = splitter.split_documents(source_docs)
 
-    def store(self, mode=setting.db.vector.mode) -> List[str]:
+    def store(self, mode=setting.db.vector.mode):
         """
         Insert documents to vector db.
 
@@ -48,8 +48,6 @@ class ChunkIndex(BaseIndex):
                 - `insert`: Insert new documents to db directly without removing duplicate.
                 - `upsert`: Insert new documents to db, if document existed, update it.
 
-        Returns:
-            List[str]: List of document id what be inserted.
         """
         assert self.indexed_data, "Can not store because indexed data is empty."
         # assert self.db, "Can not store because db is empty."

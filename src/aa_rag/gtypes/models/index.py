@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, ConfigDict, FilePath
 
 from aa_rag import setting
-from aa_rag.gtypes import IndexType, EmbeddingModel
+from aa_rag.gtypes import IndexType
 from aa_rag.gtypes.enums import DBMode
 from aa_rag.gtypes.models.base import BaseResponse
 
@@ -11,7 +11,7 @@ class IndexItem(BaseModel):
     index_type: IndexType = Field(
         default=setting.index.type, examples=[setting.index.type]
     )
-    embedding_model: EmbeddingModel = Field(
+    embedding_model: str = Field(
         default=setting.embedding.model, examples=[setting.embedding.model]
     )
 

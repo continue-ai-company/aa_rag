@@ -95,7 +95,7 @@ You can choose one of the following installation methods: **uv** (recommended) o
     - If you installed the package from source code and are using the `requirements.txt` file, you can run the server using the following command:
       ```bash
         source ./.venv/bin/activate
-        cd ./src
+        export PYTHONPATH=$(pwd)/src # Set the PYTHONPATH to the src directory
         python -m aa_rag.main
         ```
 

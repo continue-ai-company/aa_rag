@@ -1,3 +1,3 @@
-from aa_rag.gtypes.enums import IndexType, EmbeddingModel
+from aa_rag.gtypes.enums import IndexType
 
-__all__ = [IndexType, EmbeddingModel]
+__all__ = [IndexType]

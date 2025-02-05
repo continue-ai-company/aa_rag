@@ -54,9 +54,9 @@ def csv2db(csv_path: str, sqlite_db_path: str):
     conn.close()
 
 
-import argparse
-
 if __name__ == "__main__":
+    import argparse
+
     parser = argparse.ArgumentParser(
         description="csv from feishu to sqlite as solution knowledge base"
     )

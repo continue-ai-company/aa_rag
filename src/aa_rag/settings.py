@@ -2,18 +2,16 @@ import ast
 import os
 
 import dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-dotenv.load_dotenv(dotenv.find_dotenv())
 
 from aa_rag.gtypes.enums import (
     IndexType,
-    EmbeddingModel,
     DBMode,
     RetrieveType,
-    LLModel,
 )
+
+dotenv.load_dotenv(dotenv.find_dotenv())
 
 
 def load_env(key: str, default=None):
@@ -41,7 +39,7 @@ class Server(BaseModel):
 
 
 class OpenAI(BaseModel):
-    api_key: str = Field(
+    api_key: SecretStr = Field(
         default=load_env("OPENAI_API_KEY"),
         alias="OPENAI_API_KEY",
         description="API key for accessing OpenAI services.",
@@ -83,15 +81,15 @@ class DB(BaseModel):
 
 
 class Embedding(BaseModel):
-    model: EmbeddingModel = Field(
-        default=EmbeddingModel.TEXT_EMBEDDING_3_SMALL,
+    model: str = Field(
+        default="text-embedding-3-small",
         description="Model used for generating text embeddings.",
     )
 
 
-class LanguageModel(BaseModel):
-    model: LLModel = Field(
-        default=LLModel.GPT_4O,
+class LLM(BaseModel):
+    model: str = Field(
+        default="gpt-4o",
         description="Model used for generating text embeddings.",
     )
 
@@ -153,8 +151,8 @@ class Settings(BaseSettings):
         description="Retrieval strategy configuration settings.",
     )
 
-    llm: LanguageModel = Field(
-        default_factory=LanguageModel,
+    llm: LLM = Field(
+        default_factory=LLM,
         description="Language model configuration settings.",
     )
 

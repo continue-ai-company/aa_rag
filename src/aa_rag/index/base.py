@@ -6,7 +6,7 @@ from langchain_core.embeddings import Embeddings
 
 from aa_rag import setting
 from aa_rag import utils
-from aa_rag.gtypes import IndexType, EmbeddingModel
+from aa_rag.gtypes import IndexType
 from aa_rag.gtypes.enums import VectorDBType
 
 
@@ -18,7 +18,7 @@ class BaseIndex:
         self,
         knowledge_name: str,
         vector_db: VectorDBType = VectorDBType.LANCE,
-        embedding_model: EmbeddingModel = setting.embedding.model,
+        embedding_model: str = setting.embedding.model,
         **kwargs,
     ):
         self._table_name = f"{knowledge_name}_{self.index_type}_{embedding_model}"
