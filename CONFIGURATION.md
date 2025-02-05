@@ -1,29 +1,39 @@
+Below is the revised `CONFIGURATION.md` file with corrections in Sections 4 and 7 (they are now documented as strings
+rather than enums):
+
+---
+
 # Configuration Parameters for aa-rag
 
-This document explains in detail how to configure the aa-rag project using environment variables and a `.env` file. The project uses [pydantic-settings](https://docs.pydantic.dev/latest/api/pydantic_settings/) with CLI parsing enabled (via `cli_parse_args=True`) and a nested delimiter of `_` to manage its configuration.
+This document explains in detail how to configure the aa-rag project using environment variables and a `.env` file.
+The project is configured with [pydantic-settings](https://docs.pydantic.dev/latest/api/pydantic_settings/), enabling
+CLI parsing (with `cli_parse_args=True`) and using the nested delimiter `_` to handle nested configurations.
 
 ## How Settings Are Loaded
 
 - **Environment & .env File:**  
-  The settings are loaded from a `.env` file (located in the project root) and from system environment variables. The settings class is configured with:
-  - `env_file=".env"` — the dotenv file name.
-  - `env_nested_delimiter="_"` — nested model fields are combined with underscores.
-  
-  If the same key is defined as a system environment variable and in the `.env` file, the system variable takes precedence.
+  Settings are loaded from a `.env` file located in the project root as well as from system environment variables. The
+  loading rules are as follows:
+  - The system environment variable takes precedence if the same key is defined both in the `.env` file and in the
+    environment.
+  - The configuration class specifies:
+    - `env_file=".env"` — the name of the dotenv file.
+    - `env_nested_delimiter="_"` — nested model fields are joined using underscores.
 
 - **Helper Function `load_env`:**  
-  Some default values are set using a helper function `load_env(key, default)` that uses `ast.literal_eval` to convert string values (such as numbers or booleans) into their proper Python types.
+  Some default values are set using the helper function `load_env(key, default)`, which uses `ast.literal_eval` to
+  convert string values (such as numbers or booleans) into their proper Python types.
 
-## Settings Structure
+## Configuration Structure
 
-The configuration is organized into several nested models:
+The configuration is organized into several nested models as detailed below:
 
 ### 1. Server
 
 - **host**:  
   - *Type*: `str`  
   - *Default*: `"0.0.0.0"`  
-  - *Description*: The host address for the server.
+  - *Description*: The host address on which the server listens.
   
 - **port**:  
   - *Type*: `int`  
@@ -45,8 +55,8 @@ The configuration is organized into several nested models:
 
 - **base_url**:  
   - *Type*: `str`  
-  - *Default*: Loaded from `OPENAI_BASE_URL` with a fallback to `"https://api.openai.com/v1"`  
-  - *Description*: Base URL for OpenAI API requests.
+  - *Default*: Loaded from `OPENAI_BASE_URL`, or defaults to `"https://api.openai.com/v1"` if not provided
+  - *Description*: The base URL for OpenAI API requests.
 
 *Environment variables*:  
 `OPENAI_API_KEY`, `OPENAI_BASE_URL`
@@ -55,19 +65,19 @@ The configuration is organized into several nested models:
 
 ### 3. DB
 
-This model contains two sub-models:
+This module contains two sub-models:
 
 #### a. Vector
 
 - **uri**:  
   - *Type*: `str`  
   - *Default*: `"./db/lancedb"`  
-  - *Description*: URI for the vector database location.
+  - *Description*: The URI for the vector database.
   
 - **mode**:  
-  - *Type*: `DBMode` (an enum)  
+  - *Type*: `DBMode` (an enum with options: `INSERT`, `OVERWRITE`, or `UPSERT`)
   - *Default*: `DBMode.UPSERT`  
-  - *Description*: Mode of operation for the database.
+  - *Description*: The operational mode for the database.
 
 *Environment variables*:  
 `DB_VECTOR_URI`, `DB_VECTOR_MODE`
@@ -77,26 +87,30 @@ This model contains two sub-models:
 - **uri**:  
   - *Type*: `str`  
   - *Default*: `"./db/db.json"`  
-  - *Description*: URI for the document (NoSQL) database location.
+  - *Description*: The URI for the document (NoSQL) database.
   
 - **mode**:  
-  - *Type*: `DBMode`  
+  - *Type*: `DBMode` (an enum with options: `INSERT`, `OVERWRITE`, or `UPSERT`)
   - *Default*: `DBMode.UPSERT`  
-  - *Description*: Mode of operation for the database.
+  - *Description*: The operational mode for the database.
 
 *Environment variables*:  
 `DB_NOSQL_URI`, `DB_NOSQL_MODE`
 
 *Top-level key*: `db`
 
+*Additional Option*:  
+To specify the type of NoSQL database, you can use `NoSQLDBType` with options `TINYDB` (represented as `"tinydb"`) and
+`MONGODB` (represented as `"mongodb"`). Check the project documentation for further details.
+
 ---
 
 ### 4. Embedding
 
 - **model**:  
-  - *Type*: `EmbeddingModel` (an enum)  
-  - *Default*: `EmbeddingModel.TEXT_EMBEDDING_3_SMALL`  
-  - *Description*: Model used for generating text embeddings.
+  - *Type*: `str`
+  - *Default*: `"text-embedding-3-small"`
+  - *Description*: The model used for generating text embeddings.
 
 *Environment variable*:  
 `EMBEDDING_MODEL`
@@ -106,19 +120,19 @@ This model contains two sub-models:
 ### 5. Index
 
 - **type**:  
-  - *Type*: `IndexType` (an enum)  
+  - *Type*: `IndexType` (an enum with the option: `CHUNK`, represented as `"chunk"`)
   - *Default*: `IndexType.CHUNK`  
-  - *Description*: Type of index used for data retrieval.
+  - *Description*: The type of index used for data retrieval.
   
 - **chunk_size**:  
   - *Type*: `int`  
-  - *Default*: Loaded from `INDEX_CHUNK_SIZE` (default value: `512`)
-  - *Description*: Size of each chunk in the index.
+  - *Default*: Loaded via `load_env("INDEX_CHUNK_SIZE", 512)` (default: `512`)
+  - *Description*: The size of each chunk in the index.
   
 - **overlap_size**:  
   - *Type*: `int`  
-  - *Default*: Loaded from `INDEX_OVERLAP_SIZE` (default value: `100`)
-  - *Description*: Overlap size between chunks in the index.
+  - *Default*: Loaded via `load_env("INDEX_OVERLAP_SIZE", 100)` (default: `100`)
+  - *Description*: The overlap size between chunks in the index.
 
 *Environment variables*:  
 `INDEX_TYPE`, `INDEX_CHUNK_SIZE`, `INDEX_OVERLAP_SIZE`
@@ -127,7 +141,7 @@ This model contains two sub-models:
 
 ### 6. Retrieve
 
-Contains a nested **Weight** model:
+This module contains a nested **Weight** model:
 
 #### a. Weight
 
@@ -141,22 +155,23 @@ Contains a nested **Weight** model:
   - *Default*: `0.5`  
   - *Description*: Weight for sparse retrieval methods.
 
-#### b. Retrieve (top level)
+#### b. Retrieve (top-level)
 
 - **type**:  
-  - *Type*: `RetrieveType` (an enum)  
+  - *Type*: `RetrieveType` (an enum with options: `HYBRID` (represented as `"hybrid"`), `DENSE` (represented as
+    `"dense"`), and `BM25` (represented as `"bm25"`))
   - *Default*: `RetrieveType.HYBRID`  
-  - *Description*: Type of retrieval strategy used.
+  - *Description*: The retrieval strategy type.
   
 - **k**:  
   - *Type*: `int`  
   - *Default*: `3`  
-  - *Description*: Number of top results to retrieve.
+  - *Description*: The number of top results to retrieve.
   
 - **only_page_content**:  
   - *Type*: `bool`  
-  - *Default*: Loaded from `ONLY_PAGE_CONTENT` (default: `False`)
-  - *Description*: Flag to retrieve only page content.
+  - *Default*: Loaded via `load_env("RETRIEVE_ONLY_PAGE_CONTENT", False)` (default: `False`)
+  - *Description*: Whether to retrieve only the page content.
 
 *Environment variables*:  
 `RETRIEVE_TYPE`, `RETRIEVE_K`, `RETRIEVE_ONLY_PAGE_CONTENT`  
@@ -167,9 +182,9 @@ For weights: `RETRIEVE_WEIGHT_DENSE`, `RETRIEVE_WEIGHT_SPARSE`
 ### 7. Language Model (llm)
 
 - **model**:  
-  - *Type*: `LLModel` (an enum)  
-  - *Default*: `LLModel.GPT_4O`  
-  - *Description*: Language model configuration used for generating text.
+  - *Type*: `str`
+  - *Default*: `"gpt-4o"`
+  - *Description*: The language model configuration for generating text.
 
 *Environment variable*:  
 `LLM_MODEL`
@@ -178,14 +193,15 @@ For weights: `RETRIEVE_WEIGHT_DENSE`, `RETRIEVE_WEIGHT_SPARSE`
 
 ## Sample .env File
 
-Below is an example of how your `.env` file might be structured. Environment variable names are uppercase and nested keys use underscores:
+Below is an example of how your `.env` file might be structured. Environment variable names are uppercase, and nested
+configuration keys are separated by underscores:
 
 ```dotenv
 # Required: OpenAI configuration
-OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_API_KEY=<your_openai_api_key_here>
 OPENAI_BASE_URL=https://api.openai.com/v1
 
-# Server configuration (optional; defaults shown)
+# Server configuration (optional; defaults are shown)
 SERVER_HOST=127.0.0.1
 SERVER_PORT=222
 
@@ -196,7 +212,7 @@ DB_NOSQL_URI=./db/db.json
 DB_NOSQL_MODE="UPSERT"
 
 # Embedding model configuration
-EMBEDDING_MODEL="TEXT_EMBEDDING_3_SMALL"
+EMBEDDING_MODEL="text-embedding-3-small"
 
 # Index configuration
 INDEX_TYPE="CHUNK"
@@ -211,4 +227,5 @@ RETRIEVE_WEIGHT_SPARSE=0.5
 RETRIEVE_ONLY_PAGE_CONTENT=False
 
 # Language model configuration
-LLM_MODEL="GPT_4O"
+LLM_MODEL="gpt-4o"
+```
