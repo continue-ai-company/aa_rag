@@ -1,5 +1,6 @@
 import ast
 import os
+from pathlib import Path
 
 import dotenv
 from pydantic import BaseModel, Field, SecretStr
@@ -11,7 +12,7 @@ from aa_rag.gtypes.enums import (
     RetrieveType,
 )
 
-dotenv.load_dotenv(dotenv.find_dotenv())
+dotenv.load_dotenv(Path(".env").absolute())
 
 
 def load_env(key: str, default=None):
@@ -156,14 +157,11 @@ class Settings(BaseSettings):
         description="Language model configuration settings.",
     )
 
+    # 这里禁用了自动的 CLI 解析
     model_config = SettingsConfigDict(
         env_file=".env",
         env_nested_delimiter="_",
         extra="ignore",
-        cli_parse_args=True,
-        cli_avoid_json=True,
-        cli_prog_name="aarag",
-        cli_ignore_unknown_args=True,
     )
 
 
