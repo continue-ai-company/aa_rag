@@ -2,7 +2,6 @@ from typing import Any, Optional, List
 
 from pydantic import BaseModel, Field, AnyUrl, ConfigDict
 
-from aa_rag import setting
 from aa_rag.gtypes.models.base import BaseResponse
 from aa_rag.gtypes.models.knowlege_base.base import BaseKnowledgeItem
 
@@ -28,7 +27,7 @@ class Guide(BaseModel):
 
 class Project(BaseModel):
     name: str = Field(..., description="Project name")
-    id: Optional[int] = Field(None, description="Project ID")
+    id: Optional[str] = Field(None, description="Project ID")
     description: Optional[str] = Field(None, description="Project description")
     git_url: Optional[AnyUrl] = Field(None, description="Git URL of the project")
     guides: Optional[List[Guide]] = Field(
@@ -45,9 +44,6 @@ class SolutionIndexItem(BaseKnowledgeItem):
         model_config = ConfigDict(extra="allow")
 
     project_meta: Project_Meta = Field(..., description="The project meta information")
-    relation_db_path: str = Field(
-        setting.db.nosql.uri, description="The path of the relation database"
-    )
 
 
 class SolutionRetrieveItem(BaseKnowledgeItem):

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -17,8 +17,8 @@ class QAIndexItem(BaseModel):
 
 class QAIndexResponse(BaseResponse):
     class Data(BaseModel):
-        affect_row_ids: List[str] = Field(
-            ..., examples=["1"], description="The id of the inserted row"
+        affect_row_ids: Optional[List[str]] = Field(
+            None, examples=["1"], description="The id of the inserted row"
         )
 
     data: Data = Field(..., description="The data of the response")

@@ -1,6 +1,5 @@
 from typing import List, Union, Any
 
-from lancedb.pydantic import LanceModel, Vector
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
@@ -30,19 +29,31 @@ class BaseIndex:
 
         if self.table_name not in self.vector_db.table_list():
             # create table if not exist
-            class TableModel(LanceModel):
-                id: str
-                vector: Vector(dimensions)
-                text: str
+            if kwargs.get("schema"):
+                self._vector_db.create_table(
+                    self.table_name, schema=kwargs.get("schema")
+                )
+            else:
+                import pyarrow as pa
 
-                class MetaData(LanceModel):
-                    source: str
+                schema = pa.schema(
+                    [
+                        pa.field("id", pa.utf8(), False),
+                        pa.field("vector", pa.list_(pa.float64(), dimensions), False),
+                        pa.field("text", pa.utf8(), False),
+                        pa.field(
+                            "metadata",
+                            pa.struct(
+                                [
+                                    pa.field("source", pa.utf8(), False),
+                                ]
+                            ),
+                            False,
+                        ),
+                    ]
+                )
 
-                metadata: MetaData
-
-            self._vector_db.create_table(
-                self.table_name, schema=TableModel.to_arrow_schema()
-            )
+                self._vector_db.create_table(self.table_name, schema=schema)
         else:
             pass
 

@@ -2,7 +2,7 @@ from typing import List, Any
 
 from langchain_core.documents import Document
 
-from aa_rag import setting
+from aa_rag.gtypes.enums import VectorDBType
 from aa_rag.index.chunk import ChunkIndex
 from aa_rag.knowledge_base.base import BaseKnowledge
 from aa_rag.retrieve.hybrid import HybridRetrieve
@@ -13,39 +13,41 @@ class QAKnowledge(BaseKnowledge):
 
     def __init__(
         self,
-        relation_db_path: str = setting.db.nosql.uri,
-        vector_db_path: str = setting.db.vector.uri,
+        vector_db: VectorDBType = VectorDBType.LANCE,
         **kwargs,
     ):
         """
         QA Knowledge Base. Built-in Knowledge Base.
-        Args:
-            relation_db_path: The path of the relation database.
-            vector_db_path: The path of the vector database.
-            **kwargs: The keyword arguments.
         """
         super().__init__(**kwargs)
 
-        # # create the directory and file if not exist
-        # relation_db_path_obj = Path(relation_db_path)
-        # if not relation_db_path_obj.exists():
-        #     relation_db_path_obj.parent.mkdir(parents=True, exist_ok=True)
-        #     relation_db_path_obj.touch()
-        # # create the connection and create the table if not exist
-        # self.relation_db_conn = sqlite3.connect(relation_db_path)
-        # self.relation_table_name = self.knowledge_name.lower()
-        # self.relation_db_conn.execute(f"""
-        #     CREATE TABLE IF NOT EXISTS {self.relation_table_name} (
-        #         qa_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        #         guides TEXT NOT NULL,
-        #         project_meta TEXT NOT NULL)""")
-        # self.relation_db_conn.commit()
+        # define table schema
+        import pyarrow as pa
 
-        self._indexer = ChunkIndex(
-            knowledge_name=self.knowledge_name.lower(), vector_db_path=vector_db_path
+        schema = pa.schema(
+            [
+                pa.field("id", pa.utf8(), False),
+                pa.field("vector", pa.list_(pa.float64(), self.dimensions), False),
+                pa.field("text", pa.utf8(), False),
+                pa.field(
+                    "metadata",
+                    pa.struct(
+                        [
+                            pa.field("solution", pa.utf8(), False),
+                            pa.field("tags", pa.list_(pa.utf8()), False),
+                        ]
+                    ),
+                    False,
+                ),
+            ]
         )
 
-        self.vector_db_path = vector_db_path
+        self._indexer = ChunkIndex(
+            knowledge_name=self.knowledge_name.lower(),
+            vector_db=vector_db,
+            schema=schema,
+        )
+        self.db = vector_db
 
     def index(
         self, error_desc: str, error_solution: str, tags: List[str], **kwargs
@@ -92,6 +94,6 @@ class QAKnowledge(BaseKnowledge):
         retriever = HybridRetrieve(
             knowledge_name=self.knowledge_name.lower(),
             index_type=self._indexer.index_type,
-            vector_db_path=self.vector_db_path,
+            vector_db=self.db,
         )
         return retriever.retrieve(query=error_desc, top_k=1, only_page_content=False)

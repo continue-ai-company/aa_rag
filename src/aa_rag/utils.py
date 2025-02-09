@@ -1,4 +1,5 @@
 import hashlib
+import uuid
 from pathlib import Path
 
 from langchain_core.documents import Document
@@ -9,8 +10,9 @@ from markitdown import MarkItDown
 
 from aa_rag import setting
 from aa_rag.db import LanceDBDataBase
-from aa_rag.db.base import BaseVectorDataBase
-from aa_rag.gtypes.enums import VectorDBType
+from aa_rag.db.base import BaseVectorDataBase, BaseNoSQLDataBase
+from aa_rag.db.tinydb_ import TinyDBDataBase
+from aa_rag.gtypes.enums import VectorDBType, NoSQLDBType
 
 
 def parse_file(file_path: Path) -> Document:
@@ -96,3 +98,28 @@ def get_vector_db(db_type: VectorDBType) -> BaseVectorDataBase | None:
             pass
         case _:
             raise ValueError(f"Invalid db type: {db_type}")
+
+
+def get_nosql_db(db_type: NoSQLDBType) -> BaseNoSQLDataBase | None:
+    match db_type:
+        case NoSQLDBType.TINYDB:
+            return TinyDBDataBase()
+        case NoSQLDBType.MONGODB:
+            pass
+        case _:
+            raise ValueError(f"Invalid db type: {db_type}")
+
+
+def get_db(
+    db_type: NoSQLDBType | VectorDBType,
+) -> BaseNoSQLDataBase | BaseVectorDataBase | None:
+    if isinstance(db_type, NoSQLDBType):
+        return get_nosql_db(db_type)
+    elif isinstance(db_type, VectorDBType):
+        return get_vector_db(db_type)
+    else:
+        raise ValueError(f"Invalid db type: {db_type}")
+
+
+def get_uuid():
+    return str(uuid.uuid4()).replace("-", "")

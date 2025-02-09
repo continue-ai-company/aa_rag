@@ -24,9 +24,7 @@ async def root():
 
 @router.post("/index")
 async def index(item: SolutionIndexItem):
-    solution = SolutionKnowledge(
-        **item.model_dump(include={"llm", "embedding_model", "relation_db_path"})
-    )
+    solution = SolutionKnowledge(**item.model_dump(include={"llm", "embedding_model"}))
 
     affect_row_num_s = solution.index(
         **item.model_dump(include={"env_info", "procedure", "project_meta"})
