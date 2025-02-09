@@ -135,7 +135,11 @@ class TinyDBDataBase(BaseNoSQLDataBase):
                                 current = ~(q[field].test(lambda v, lst=val: v in lst))
                             elif op == "$exists":
                                 # 若 val 为 True，则判断字段值不为 None；若为 False，则判断为 None
-                                current = (q[field] is not None) if val else (q[field] is None)
+                                current = (
+                                    (q[field] is not None)
+                                    if val
+                                    else (q[field] is None)
+                                )
                             else:
                                 raise ValueError(f"不支持的操作符: {op}")
                             if field_expr is None:

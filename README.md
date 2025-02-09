@@ -90,7 +90,6 @@ You can choose one of the following installation methods: **uv** (recommended) o
       ```bash
       uv run aarag
       ```
-    >  You can set command-line arguments to change the server configuration if you use `aarag` to startup. `aarag -h` will show you the available options. 
 
     - If you installed the package from source code and are using the `requirements.txt` file, you can run the server using the following command:
       ```bash

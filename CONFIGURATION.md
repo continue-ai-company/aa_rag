@@ -1,8 +1,7 @@
 # Configuration Parameters for aa-rag
 
 This document explains in detail how to configure the aa-rag project using environment variables and a `.env` file.
-The project is configured with [pydantic-settings](https://docs.pydantic.dev/latest/api/pydantic_settings/), enabling
-CLI parsing (with `cli_parse_args=True`) and using the nested delimiter `_` to handle nested configurations.
+The project is configured with [pydantic-settings](https://docs.pydantic.dev/latest/api/pydantic_settings/), using the nested delimiter `_` to handle nested configurations.
 
 ## How Settings Are Loaded
 
