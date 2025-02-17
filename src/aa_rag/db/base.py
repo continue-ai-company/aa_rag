@@ -1,59 +1,58 @@
+from abc import abstractmethod, ABC
 from typing import Any, List
 
 from pandas import DataFrame
 
+from aa_rag.gtypes.enums import VectorDBType, NoSQLDBType
+
 
 class BaseDataBase:
-    _db_type: str
+    _db_type: Any
     _conn_obj: Any
-    _table_obj: Any
 
     def __init__(self, **kwargs):
-        pass
+        self._conn_obj = self.connect(**kwargs)
 
     @property
     def connection(self):
         return self._conn_obj
 
     @property
-    def table(self):
-        return self._table_obj
+    def db_type(self):
+        return self._db_type
 
-    def connect(self):
+    @abstractmethod
+    def connect(self, **kwargs):
         return NotImplemented
 
-    def get_table(self, table_name, **kwargs):
-        return NotImplemented
-
+    @abstractmethod
     def table_list(self) -> List[str]:
         return NotImplemented
 
+    @abstractmethod
     def create_table(self, table_name, schema, **kwargs):
         return NotImplemented
 
+    @abstractmethod
     def drop_table(self, table_name):
         return NotImplemented
 
-    def insert(self, **kwargs):
-        return NotImplemented
-
-    def select(self, **kwargs):
-        return NotImplemented
-
-    def update(self, **kwargs):
-        return NotImplemented
-
-    def delete(self, **kwargs):
-        return NotImplemented
-
+    @abstractmethod
     def close(self):
         return NotImplemented
 
-    def __enter__(self):
-        assert self.table is not None, (
-            "Table object is not defined, please use get_table() method to define it"
-        )
+    @abstractmethod
+    def using(self, *args, **kwargs):
+        """
+        Set the table or collection to use. This is useful for chaining methods.
 
+        Returns:
+            self
+
+        """
+        return self
+
+    def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -61,43 +60,39 @@ class BaseDataBase:
 
         return False
 
+    def __call__(self, *args, **kwargs):
+        return self.using(*args, **kwargs)
 
-class BaseVectorDataBase(BaseDataBase):
+
+class BaseVectorDataBase(BaseDataBase, ABC):
+    _db_type: VectorDBType
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    @abstractmethod
     def insert(self, data: list[dict] | DataFrame, **kwargs):
         return NotImplemented
 
-    def update(self, where: str, values: dict, **kwargs):
-        return NotImplemented
-
+    @abstractmethod
     def delete(self, where: str):
         return NotImplemented
 
-    def upsert(self, data: list[dict] | DataFrame, duplicate_where, **kwargs):
-        assert self.table is not None, (
-            "Table object is not defined, please use `with db.get_table()` to use insert method"
-        )
+    @abstractmethod
+    def upsert(self, data: list[dict], **kwargs):
+        return NotImplemented
 
-        self.delete(duplicate_where)
-        self.insert(data, **kwargs)
-
+    @abstractmethod
     def overwrite(self, data: list[dict] | DataFrame, **kwargs):
-        assert self.table is not None, (
-            "Table object is not defined, please use `with db.get_table()` to use overwrite method"
-        )
+        return NotImplemented
 
-        self.delete(where="1=1")
-        self.insert(data, **kwargs)
-
-    def search(self, query_vector: List[float], top_k: int = 3, **kwargs):
+    @abstractmethod
+    def query(self, expr: str, **kwargs):
         return NotImplemented
 
 
-class BaseNoSQLDataBase(BaseDataBase):
+class BaseNoSQLDataBase(BaseDataBase, ABC):
+    _db_type: NoSQLDBType
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-    def create_table(self, table_name, **kwargs):
-        return NotImplemented

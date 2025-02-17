@@ -38,16 +38,12 @@ class ChunkIndex(BaseIndex):
         )
         self._indexed_data = splitter.split_documents(source_docs)
 
-    def store(self, mode=setting.db.vector.mode):
+    def store(self, mode: DBMode = setting.db.mode):
         """
         Insert documents to vector db.
 
         Args:
-            mode (str, optional): Insert method. Defaults to 'deinsert'.
-
-                - `insert`: Insert new documents to db directly without removing duplicate.
-                - `upsert`: Insert new documents to db, if document existed, update it.
-
+            mode: The mode to store the data.
         """
         assert self.indexed_data, "Can not store because indexed data is empty."
         # assert self.db, "Can not store because db is empty."
@@ -75,19 +71,16 @@ class ChunkIndex(BaseIndex):
 
         match mode:
             case DBMode.INSERT:
-                with self.vector_db.get_table(self.table_name) as table:
+                with self.vector_db.using(self.table_name) as table:
                     table.add(data)
                 return id_s
 
             case DBMode.UPSERT:
-                ids_str = ", ".join(map(lambda x: f"'{x}'", id_s))
-                where_str = f"id IN ({ids_str})"
-
-                with self.vector_db.get_table(self.table_name) as table:
-                    table.upsert(data, duplicate_where=where_str)
+                with self.vector_db.using(self.table_name) as table:
+                    table.upsert(data)
 
             case DBMode.OVERWRITE:
-                with self.vector_db.get_table(self.table_name) as table:
+                with self.vector_db.using(self.table_name) as table:
                     table.overwrite(data)
 
             case _:

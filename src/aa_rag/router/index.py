@@ -26,7 +26,7 @@ async def chunk_index(item: ChunkIndexItem) -> IndexResponse:
     source_docs = utils.parse_file(item.file_path)
 
     indexer.index(source_docs)
-    indexer.store(mode=item.db_mode)
+    indexer.store()
     return IndexResponse(
         code=200,
         status="success",

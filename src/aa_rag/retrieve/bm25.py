@@ -1,5 +1,6 @@
 from typing import List, Dict
 
+import pandas as pd
 from langchain_community.retrievers import BM25Retriever
 from langchain_core.documents import Document
 
@@ -33,12 +34,18 @@ class BM25Retrieve(BaseRetrieve):
             List[Dict|str]: List of retrieved documents.
         """
 
-        with self.vector_db.get_table(self.table_name) as table:
-            all_doc_df = table.select(where="1=1")
+        with self.vector_db.using(self.table_name) as table:
+            all_doc = table.query(
+                "", limit=-1, output_fields=["id", "text", "metadata"]
+            )  # get all documents
+            all_doc_df = pd.DataFrame(all_doc)
             all_doc_s = (
-                all_doc_df[["text", "metadata"]]
+                all_doc_df[["id", "text", "metadata"]]
                 .apply(
-                    lambda x: Document(page_content=x["text"], metadata=x["metadata"]),
+                    lambda x: Document(
+                        page_content=x["text"],
+                        metadata={**x["metadata"], "id": x["id"]},
+                    ),
                     axis=1,
                 )
                 .tolist()

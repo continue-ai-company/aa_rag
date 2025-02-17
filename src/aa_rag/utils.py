@@ -11,6 +11,7 @@ from markitdown import MarkItDown
 from aa_rag import setting
 from aa_rag.db import LanceDBDataBase
 from aa_rag.db.base import BaseVectorDataBase, BaseNoSQLDataBase
+from aa_rag.db.milvus_ import MilvusDataBase
 from aa_rag.db.tinydb_ import TinyDBDataBase
 from aa_rag.gtypes.enums import VectorDBType, NoSQLDBType
 
@@ -95,7 +96,7 @@ def get_vector_db(db_type: VectorDBType) -> BaseVectorDataBase | None:
         case VectorDBType.LANCE:
             return LanceDBDataBase()
         case VectorDBType.MILVUS:
-            pass
+            return MilvusDataBase()
         case _:
             raise ValueError(f"Invalid db type: {db_type}")
 

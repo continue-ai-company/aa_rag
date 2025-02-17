@@ -5,18 +5,18 @@ from tinydb.table import Table
 
 from aa_rag import setting
 from aa_rag.db.base import BaseNoSQLDataBase
+from aa_rag.gtypes.enums import NoSQLDBType
 
 
 class TinyDBDataBase(BaseNoSQLDataBase):
-    _db_type = "TinyDB"
+    _db_type = NoSQLDBType.TINYDB
 
-    def __init__(self, uri: str = setting.db.nosql.uri, **kwargs):
+    def __init__(self, uri: str = setting.db.tinydb.uri, **kwargs):
         self.uri = uri
-        # 如果目录不存在，则创建父目录
+        # create parent directory if not exist
         Path(self.uri).parent.mkdir(parents=True, exist_ok=True)
 
         self._conn_obj = self.connect()
-        self._table_obj = None
 
         super().__init__(**kwargs)
 
@@ -28,7 +28,7 @@ class TinyDBDataBase(BaseNoSQLDataBase):
     def table(self) -> Table:
         if self._table_obj is None:
             raise ValueError(
-                "Table 对象未定义，请先调用 `get_table(table_name)` 方法设置 table 对象"
+                "Table object is not defined. Please call `get_table(table_name)` first."
             )
         return self._table_obj
 
@@ -36,48 +36,52 @@ class TinyDBDataBase(BaseNoSQLDataBase):
         return TinyDB(self.uri)
 
     def create_table(self, table_name, **kwargs):
-        """创建并返回指定名称的表"""
         return self.connection.table(table_name, **kwargs)
 
     def get_table(self, table_name, **kwargs):
-        """设置当前使用的表，并返回 self 以支持链式调用"""
+        """
+        get table object by table name, return self for with statement.
+        """
         self._table_obj = self.connection.table(table_name, **kwargs)
         return self
 
     def table_list(self):
-        """返回所有表的名称集合"""
+        """
+        return all table names in the database.
+        """
         return self.connection.tables()
 
     def drop_table(self, table_name):
-        """删除指定名称的表"""
+        """
+        drop table by table name.
+        """
         return self.connection.drop_table(table_name)
 
     def insert(self, data):
         """
-        插入数据。
-        注意：此处 data 可以为单个 dict 或 dict 列表，根据 tinydb 的 insert/insert_multiple 方法自行扩展。
+        insert data into table.
         """
         return self.table.insert(data)
 
     def _build_query_mongo(self, mongo_query: dict, q: Query = None):
         """
-        将 MongoDB 查询语法转换为 TinyDB 的查询表达式。
+        Convert MongoDB query syntax to TinyDB query expressions.
 
-        支持的 MongoDB 查询操作符包括：
-          - 比较操作符: $gt, $gte, $lt, $lte, $eq, $ne
-          - 集合操作符: $in, $nin
-          - 存在性判断: $exists
-          - 逻辑操作符: $and, $or, $nor, $not
+        Supported MongoDB query operators include:
+          - Comparison operators: $gt, $gte, $lt, $lte, $eq, $ne
+          - Collection operators: $in, $nin
+          - Existence judgment: $exists
+          - Logical operators: $and, $or, $nor, $not
 
-        示例：
+        Example:
           {"age": {"$gt": 30, "$lt": 50}, "name": "John"}
-          等价于：
+          Equivalent to:
           (Query()['age'] > 30) & (Query()['age'] < 50) & (Query()['name'] == "John")
         """
         if q is None:
             q = Query()
         if isinstance(mongo_query, dict):
-            # 处理顶层逻辑操作符
+            # handle top-level logical operators
             if "$and" in mongo_query:
                 sub_exprs = [
                     self._build_query_mongo(sub, q) for sub in mongo_query["$and"]
@@ -106,7 +110,7 @@ class TinyDBDataBase(BaseNoSQLDataBase):
                 sub_expr = self._build_query_mongo(mongo_query["$not"], q)
                 return ~sub_expr
             else:
-                # 处理字段查询
+                # handle field-level operators
                 sub_exprs = []
                 for field, condition in mongo_query.items():
                     if isinstance(condition, dict):
@@ -126,29 +130,29 @@ class TinyDBDataBase(BaseNoSQLDataBase):
                                 current = ~(q[field] == val)
                             elif op == "$in":
                                 if not isinstance(val, list):
-                                    raise ValueError("$in 操作符要求值为列表")
-                                # 使用 test 方法构造 in 查询
+                                    raise ValueError("$in requires a list value")
+                                # use the test method to construct in query
                                 current = q[field].test(lambda v, lst=val: v in lst)
                             elif op == "$nin":
                                 if not isinstance(val, list):
-                                    raise ValueError("$nin 操作符要求值为列表")
+                                    raise ValueError("$nin requires a list value")
                                 current = ~(q[field].test(lambda v, lst=val: v in lst))
                             elif op == "$exists":
-                                # 若 val 为 True，则判断字段值不为 None；若为 False，则判断为 None
+                                # check the field is None if val is False, otherwise check it is not None
                                 current = (
                                     (q[field] is not None)
                                     if val
                                     else (q[field] is None)
                                 )
                             else:
-                                raise ValueError(f"不支持的操作符: {op}")
+                                raise ValueError(f"Unsupported Operation: {op}")
                             if field_expr is None:
                                 field_expr = current
                             else:
                                 field_expr = field_expr & current
                         sub_exprs.append(field_expr)
                     else:
-                        # 直接进行等值判断
+                        # make a direct judgment of equal value
                         sub_exprs.append(q[field] == condition)
                 if not sub_exprs:
                     return None
@@ -157,13 +161,15 @@ class TinyDBDataBase(BaseNoSQLDataBase):
                     expr = expr & e
                 return expr
         else:
-            raise ValueError("Mongo 查询条件必须为字典类型")
+            raise ValueError("Mongo Query Condition Must Be A Dict")
 
     def select(self, query: dict = None):
         """
-        查询接口，接收 MongoDB 查询语法。
+        Query the interface and receive MongoDB query syntax.
+        Args:
+            query: A dict representing the MongoDB query.
 
-        示例：
+        Example:
             query = {"age": {"$gt": 30}, "$or": [{"name": "Alice"}, {"name": "Bob"}]}
             results = db.select(query)
         """
@@ -174,35 +180,35 @@ class TinyDBDataBase(BaseNoSQLDataBase):
 
     def update(self, update_data: dict, query: dict = None):
         """
-        更新符合 MongoDB 查询条件的记录。
+        Update records that meet MongoDB query criteria.
 
         Args:
-            update_data: 一个字典，指定要更新的字段和值。
-            query: MongoDB 查询语法的字典，用于选择需要更新的记录。
-                   如果 query 为 None 或空字典，则更新所有记录。
+            update_data: A dictionary that specifies the fields and values to be updated.
+            query: MongoDB dictionary of query syntax, used to select records that need to be updated.
+                   If query is None or an empty dictionary, all records are updated.
 
         Returns:
-            update_result: 通常为更新的记录标识列表。
+            update_result: Usually an updated record identification list.
         """
         if query is None or not query:
-            # 若没有指定查询条件，则更新所有记录
+            # If no query conditions are specified, all records will be updated.
             return self.table.update(update_data)
         query_obj = self._build_query_mongo(query)
         return self.table.update(update_data, query_obj)
 
     def delete(self, query: dict = None):
         """
-        删除符合 MongoDB 查询条件的记录。
+        Delete records that meet MongoDB query criteria.
 
         Args:
-            query: MongoDB 查询语法的字典，用于选择需要删除的记录。
-                   如果 query 为 None 或空字典，则删除所有记录。
+            query: MongoDB dictionary of query syntax, used to select records to be deleted.
+                   If query is None or an empty dictionary, all records are deleted.
 
         Returns:
-            delete_result: 通常为删除的记录标识列表。
+            delete_result: Usually a list of deleted records.
         """
         if query is None or not query:
-            # 若没有指定查询条件，则删除所有记录
+            # If no query conditions are specified, all records will be deleted.
             return self.table.remove()
         query_obj = self._build_query_mongo(query)
         return self.table.remove(query_obj)

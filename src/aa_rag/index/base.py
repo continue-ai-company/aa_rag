@@ -16,11 +16,13 @@ class BaseIndex:
     def __init__(
         self,
         knowledge_name: str,
-        vector_db: VectorDBType = VectorDBType.LANCE,
+        vector_db: VectorDBType = setting.db.vector,
         embedding_model: str = setting.embedding.model,
         **kwargs,
     ):
-        self._table_name = f"{knowledge_name}_{self.index_type}_{embedding_model}"
+        self._table_name = (
+            f"{knowledge_name}_{self.index_type}_{embedding_model}".replace("-", "_")
+        )
 
         self._vector_db = utils.get_vector_db(vector_db)
         self._embeddings, dimensions = utils.get_embedding_model(
@@ -34,24 +36,61 @@ class BaseIndex:
                     self.table_name, schema=kwargs.get("schema")
                 )
             else:
-                import pyarrow as pa
+                match self.vector_db.db_type:
+                    case VectorDBType.LANCE:
+                        import pyarrow as pa
 
-                schema = pa.schema(
-                    [
-                        pa.field("id", pa.utf8(), False),
-                        pa.field("vector", pa.list_(pa.float64(), dimensions), False),
-                        pa.field("text", pa.utf8(), False),
-                        pa.field(
-                            "metadata",
-                            pa.struct(
-                                [
-                                    pa.field("source", pa.utf8(), False),
-                                ]
-                            ),
-                            False,
-                        ),
-                    ]
-                )
+                        schema = pa.schema(
+                            [
+                                pa.field("id", pa.utf8(), False),
+                                pa.field(
+                                    "vector", pa.list_(pa.float64(), dimensions), False
+                                ),
+                                pa.field("text", pa.utf8(), False),
+                                pa.field(
+                                    "metadata",
+                                    pa.struct(
+                                        [
+                                            pa.field("source", pa.utf8(), False),
+                                        ]
+                                    ),
+                                    False,
+                                ),
+                            ]
+                        )
+                    case VectorDBType.MILVUS:
+                        from pymilvus import CollectionSchema, FieldSchema, DataType
+
+                        id_field = FieldSchema(
+                            name="id",
+                            dtype=DataType.VARCHAR,
+                            max_length=256,
+                            is_primary=True,
+                        )
+
+                        vector_field = FieldSchema(
+                            name="vector", dtype=DataType.FLOAT_VECTOR, dim=dimensions
+                        )
+
+                        text_field = FieldSchema(
+                            name="text",
+                            dtype=DataType.VARCHAR,
+                            max_length=65535,
+                        )
+
+                        metadata_field = FieldSchema(
+                            name="metadata",
+                            dtype=DataType.JSON,
+                        )
+
+                        schema = CollectionSchema(
+                            fields=[id_field, vector_field, text_field, metadata_field],
+                            description="Milvus schema converted from LanceDB schema",
+                        )
+                    case _:
+                        raise ValueError(
+                            f"Unsupported vector database type: {self.vector_db.db_type}"
+                        )
 
                 self._vector_db.create_table(self.table_name, schema=schema)
         else:

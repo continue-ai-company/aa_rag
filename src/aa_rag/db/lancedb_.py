@@ -8,12 +8,13 @@ from pandas import DataFrame
 
 from aa_rag import setting
 from aa_rag.db.base import BaseVectorDataBase
+from aa_rag.gtypes.enums import VectorDBType
 
 
 class LanceDBDataBase(BaseVectorDataBase):
-    _db_type = "LanceDB"
+    _db_type = VectorDBType.LANCE
 
-    def __init__(self, uri: str = setting.db.vector.uri, **kwargs):
+    def __init__(self, uri: str = setting.db.lancedb.uri, **kwargs):
         self.uri = uri
         self._conn_obj = self.connect()
         super().__init__(**kwargs)

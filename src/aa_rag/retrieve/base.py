@@ -10,11 +10,13 @@ class BaseRetrieve:
         self,
         knowledge_name: str,
         index_type: IndexType,
-        vector_db: VectorDBType = VectorDBType.LANCE,
+        vector_db: VectorDBType = setting.db.vector,
         embedding_model: str = setting.embedding.model,
         **kwargs,
     ):
-        self._table_name = f"{knowledge_name}_{index_type}_{embedding_model}"
+        self._table_name = f"{knowledge_name}_{index_type}_{embedding_model}".replace(
+            "-", "_"
+        )
         self._vector_db = utils.get_vector_db(vector_db)
         self._embeddings = utils.get_embedding_model(embedding_model, return_dim=False)
 

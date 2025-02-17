@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field, ConfigDict, FilePath
 
 from aa_rag import setting
 from aa_rag.gtypes import IndexType
-from aa_rag.gtypes.enums import DBMode
 from aa_rag.gtypes.models.base import BaseResponse
 
 
@@ -20,11 +19,6 @@ class IndexItem(BaseModel):
 
 class ChunkIndexItem(IndexItem):
     file_path: FilePath = Field(default=..., examples=["./data/fairy_tale.txt"])
-    db_mode: DBMode = Field(
-        default=setting.db.vector.mode,
-        examples=[setting.db.vector.mode],
-        description="Mode for inserting data to db",
-    )
     chunk_size: int = Field(
         default=setting.index.chunk_size, examples=[setting.index.chunk_size]
     )

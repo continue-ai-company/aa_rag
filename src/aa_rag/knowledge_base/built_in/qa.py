@@ -2,6 +2,7 @@ from typing import List, Any
 
 from langchain_core.documents import Document
 
+from aa_rag import setting
 from aa_rag.gtypes.enums import VectorDBType
 from aa_rag.index.chunk import ChunkIndex
 from aa_rag.knowledge_base.base import BaseKnowledge
@@ -13,7 +14,7 @@ class QAKnowledge(BaseKnowledge):
 
     def __init__(
         self,
-        vector_db: VectorDBType = VectorDBType.LANCE,
+        vector_db: VectorDBType = setting.db.vector,
         **kwargs,
     ):
         """
@@ -22,25 +23,61 @@ class QAKnowledge(BaseKnowledge):
         super().__init__(**kwargs)
 
         # define table schema
-        import pyarrow as pa
+        match vector_db:
+            case VectorDBType.LANCE:
+                import pyarrow as pa
 
-        schema = pa.schema(
-            [
-                pa.field("id", pa.utf8(), False),
-                pa.field("vector", pa.list_(pa.float64(), self.dimensions), False),
-                pa.field("text", pa.utf8(), False),
-                pa.field(
-                    "metadata",
-                    pa.struct(
-                        [
-                            pa.field("solution", pa.utf8(), False),
-                            pa.field("tags", pa.list_(pa.utf8()), False),
-                        ]
-                    ),
-                    False,
-                ),
-            ]
-        )
+                schema = pa.schema(
+                    [
+                        pa.field("id", pa.utf8(), False),
+                        pa.field(
+                            "vector", pa.list_(pa.float64(), self.dimensions), False
+                        ),
+                        pa.field("text", pa.utf8(), False),
+                        pa.field(
+                            "metadata",
+                            pa.struct(
+                                [
+                                    pa.field("solution", pa.utf8(), False),
+                                    pa.field("tags", pa.list_(pa.utf8()), False),
+                                ]
+                            ),
+                            False,
+                        ),
+                    ]
+                )
+            case VectorDBType.MILVUS:
+                from pymilvus import CollectionSchema, FieldSchema, DataType
+
+                id_field = FieldSchema(
+                    name="id",
+                    dtype=DataType.VARCHAR,
+                    max_length=256,
+                    is_primary=True,
+                )
+
+                vector_field = FieldSchema(
+                    name="vector", dtype=DataType.FLOAT_VECTOR, dim=self.dimensions
+                )
+
+                text_field = FieldSchema(
+                    name="text",
+                    dtype=DataType.VARCHAR,
+                    max_length=65535,
+                )
+
+                metadata_field = FieldSchema(
+                    name="metadata",
+                    dtype=DataType.JSON,
+                )
+
+                schema = CollectionSchema(
+                    fields=[id_field, vector_field, text_field, metadata_field],
+                    description="Milvus schema converted from LanceDB schema",
+                )
+
+            case _:
+                raise ValueError(f"Unsupported vector database type: {vector_db}")
 
         self._indexer = ChunkIndex(
             knowledge_name=self.knowledge_name.lower(),

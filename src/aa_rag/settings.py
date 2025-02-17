@@ -10,6 +10,8 @@ from aa_rag.gtypes.enums import (
     IndexType,
     DBMode,
     RetrieveType,
+    VectorDBType,
+    NoSQLDBType,
 )
 
 dotenv.load_dotenv(Path(".env").absolute())
@@ -53,31 +55,47 @@ class OpenAI(BaseModel):
 
 
 class DB(BaseModel):
-    class Vector(BaseModel):
+    class LanceDB(BaseModel):
         uri: str = Field(
-            default="./db/lancedb", description="URI for the vector database location."
+            default="./db/lancedb", description="URI for lanceDB database location."
         )
 
-        mode: DBMode = Field(
-            default=DBMode.UPSERT, description="Mode of operation for the database."
+    class Milvus(BaseModel):
+        uri: str = Field(
+            default="./db/milvus.db",
+            description="URI for the Milvus server location.",
+        )
+        user: str = Field(default="", description="Username for the Milvus server.")
+        password: SecretStr = Field(
+            default="", description="Password for the Milvus server."
+        )
+        database: str = Field(
+            default="default", description="Database name for the Milvus server."
         )
 
-    class NoSQL(BaseModel):
+    class TinyDB(BaseModel):
         uri: str = Field(
             default="./db/db.json",
             description="URI for the relational database location.",
         )
 
-        mode: DBMode = Field(
-            default=DBMode.UPSERT, description="Mode of operation for the database."
-        )
-
-    vector: Vector = Field(
-        default_factory=Vector, description="Configuration for the vector database."
+    lancedb: LanceDB = Field(
+        default_factory=LanceDB, description="LanceDB database configuration settings."
     )
-
-    nosql: NoSQL = Field(
-        default_factory=NoSQL, description="Configuration for the document database."
+    milvus: Milvus = Field(
+        default_factory=Milvus, description="Milvus database configuration settings."
+    )
+    tinydb: TinyDB = Field(
+        default_factory=TinyDB, description="TinyDB database configuration settings."
+    )
+    mode: DBMode = Field(
+        default=DBMode.UPSERT, description="Mode of operation for the database."
+    )
+    vector: VectorDBType = Field(
+        default=VectorDBType.MILVUS, description="Type of vector database used."
+    )
+    nosql: NoSQLDBType = Field(
+        default=NoSQLDBType.TINYDB, description="Type of NoSQL database used."
     )
 
 
