@@ -45,7 +45,7 @@ click==8.1.8
     #   uvicorn
 cobble==0.1.4
     # via mammoth
-cryptography==44.0.0
+cryptography==44.0.1
     # via pdfminer-six
 dataclasses-json==0.6.7
     # via langchain-community
@@ -56,7 +56,9 @@ deprecation==2.1.0
 distro==1.9.0
     # via openai
 dnspython==2.7.0
-    # via email-validator
+    # via
+    #   email-validator
+    #   pymongo
 email-validator==2.2.0
     # via fastapi
 et-xmlfile==2.0.0
@@ -71,6 +73,8 @@ frozenlist==1.5.0
     # via
     #   aiohttp
     #   aiosignal
+grpcio==1.67.1
+    # via pymilvus
 h11==0.14.0
     # via
     #   httpcore
@@ -114,8 +118,11 @@ langchain-core==0.3.29
     #   aa-rag (pyproject.toml)
     #   langchain
     #   langchain-community
+    #   langchain-milvus
     #   langchain-openai
     #   langchain-text-splitters
+langchain-milvus==0.1.8
+    # via aa-rag (pyproject.toml)
 langchain-openai==0.2.14
     # via aa-rag (pyproject.toml)
 langchain-text-splitters==0.3.5
@@ -125,7 +132,7 @@ langsmith==0.2.11
     #   langchain
     #   langchain-community
     #   langchain-core
-lxml==5.3.0
+lxml==5.3.1
     # via python-pptx
 mammoth==1.9.0
     # via markitdown
@@ -141,6 +148,8 @@ marshmallow==3.26.1
     # via dataclasses-json
 mdurl==0.1.2
     # via markdown-it-py
+milvus-lite==2.4.11
+    # via pymilvus
 multidict==6.1.0
     # via
     #   aiohttp
@@ -176,6 +185,7 @@ pandas==2.2.3
     # via
     #   aa-rag (pyproject.toml)
     #   markitdown
+    #   pymilvus
 pathvalidate==3.2.3
     # via markitdown
 pdfminer-six==20240706
@@ -186,6 +196,8 @@ propcache==0.2.1
     # via
     #   aiohttp
     #   yarl
+protobuf==5.29.3
+    # via pymilvus
 puremagic==1.28
     # via markitdown
 pyarrow==19.0.0
@@ -211,12 +223,19 @@ pygments==2.19.1
     # via rich
 pylance==0.20.0
     # via lancedb
+pymilvus==2.5.4
+    # via
+    #   aa-rag (pyproject.toml)
+    #   langchain-milvus
+pymongo==4.11.1
+    # via aa-rag (pyproject.toml)
 python-dateutil==2.9.0.post0
     # via pandas
 python-dotenv==1.0.1
     # via
     #   aa-rag (pyproject.toml)
     #   pydantic-settings
+    #   pymilvus
     #   uvicorn
 python-multipart==0.0.20
     # via fastapi
@@ -251,6 +270,8 @@ rich==13.9.4
     #   typer
 rich-toolkit==0.13.2
     # via fastapi-cli
+setuptools==75.8.0
+    # via pymilvus
 shellingham==1.5.4
     # via typer
 six==1.17.0
@@ -276,13 +297,14 @@ tenacity==9.0.0
     #   langchain
     #   langchain-community
     #   langchain-core
-tiktoken==0.8.0
+tiktoken==0.9.0
     # via langchain-openai
 tinydb==4.8.2
     # via aa-rag (pyproject.toml)
 tqdm==4.67.1
     # via
     #   lancedb
+    #   milvus-lite
     #   openai
 typer==0.15.1
     # via fastapi-cli
@@ -308,6 +330,8 @@ typing-inspect==0.9.0
     # via dataclasses-json
 tzdata==2025.1
     # via pandas
+ujson==5.10.0
+    # via pymilvus
 urllib3==2.3.0
     # via requests
 uvicorn==0.34.0
@@ -318,7 +342,7 @@ uvloop==0.21.0
     # via uvicorn
 watchfiles==1.0.4
     # via uvicorn
-websockets==14.2
+websockets==15.0
     # via uvicorn
 xlsxwriter==3.2.2
     # via python-pptx
