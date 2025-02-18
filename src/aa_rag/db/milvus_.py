@@ -7,10 +7,11 @@ from pymilvus import (
 )
 
 from aa_rag import setting
-from aa_rag.db.base import BaseVectorDataBase
+from aa_rag.db.base import BaseVectorDataBase, singleton
 from aa_rag.gtypes.enums import VectorDBType
 
 
+@singleton
 class MilvusDataBase(BaseVectorDataBase):
     """Milvus vector database implementation with unified interface"""
 

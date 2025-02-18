@@ -12,6 +12,7 @@ from aa_rag import setting
 from aa_rag.db import LanceDBDataBase
 from aa_rag.db.base import BaseVectorDataBase, BaseNoSQLDataBase
 from aa_rag.db.milvus_ import MilvusDataBase
+from aa_rag.db.mongo_ import MongoDBDataBase
 from aa_rag.db.tinydb_ import TinyDBDataBase
 from aa_rag.gtypes.enums import VectorDBType, NoSQLDBType
 
@@ -106,7 +107,7 @@ def get_nosql_db(db_type: NoSQLDBType) -> BaseNoSQLDataBase | None:
         case NoSQLDBType.TINYDB:
             return TinyDBDataBase()
         case NoSQLDBType.MONGODB:
-            pass
+            return MongoDBDataBase()
         case _:
             raise ValueError(f"Invalid db type: {db_type}")
 

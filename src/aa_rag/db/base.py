@@ -6,6 +6,17 @@ from pandas import DataFrame
 from aa_rag.gtypes.enums import VectorDBType, NoSQLDBType
 
 
+def singleton(cls):
+    instances = {}
+
+    def wrapper(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+
+    return wrapper
+
+
 class BaseDataBase:
     _db_type: Any
     _conn_obj: Any
@@ -55,10 +66,9 @@ class BaseDataBase:
     def __enter__(self):
         return self
 
+    @abstractmethod
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._table_obj = None  # Reset the table object
-
-        return False
+        return NotImplemented
 
     def __call__(self, *args, **kwargs):
         return self.using(*args, **kwargs)

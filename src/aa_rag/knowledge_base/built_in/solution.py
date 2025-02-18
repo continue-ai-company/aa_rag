@@ -4,7 +4,7 @@ from typing import Dict, Any, List
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
-from aa_rag import utils
+from aa_rag import utils, setting
 from aa_rag.db.base import BaseNoSQLDataBase
 from aa_rag.gtypes.enums import NoSQLDBType
 from aa_rag.gtypes.models.knowlege_base.solution import CompatibleEnv, Project, Guide
@@ -14,7 +14,7 @@ from aa_rag.knowledge_base.base import BaseKnowledge
 class SolutionKnowledge(BaseKnowledge):
     _knowledge_name = "Solution"
 
-    def __init__(self, nosql_db: NoSQLDBType = NoSQLDBType.TINYDB, **kwargs):
+    def __init__(self, nosql_db: NoSQLDBType = setting.db.nosql, **kwargs):
         """
         Solution Knowledge Base. Built-in Knowledge Base.
         Args:
@@ -24,8 +24,8 @@ class SolutionKnowledge(BaseKnowledge):
         super().__init__(**kwargs)
         self.nosql_db: BaseNoSQLDataBase = utils.get_db(nosql_db)
         self.table_name = self.knowledge_name.lower()
-        # 初始化 TinyDB 表（如果表不存在，则自动创建）
-        self.nosql_db.get_table(self.table_name)
+        # # 初始化 TinyDB 表（如果表不存在，则自动创建）
+        # self.nosql_db.using(self.table_name)
 
     def _is_compatible_env(
         self, source_env_info: CompatibleEnv, target_env_info: CompatibleEnv
@@ -73,7 +73,7 @@ class SolutionKnowledge(BaseKnowledge):
         """
         # 为方便查询，将项目名称在顶层存储，因此这里直接查询 "name" 字段
         query = {"name": project_meta["name"]}
-        with self.nosql_db.get_table(self.table_name) as table:
+        with self.nosql_db.using(self.table_name) as table:
             records = table.select(query)
         if records:
             record = records[0]
@@ -109,15 +109,15 @@ class SolutionKnowledge(BaseKnowledge):
             "project_meta": project.model_dump(exclude={"guides", "id"}),
             "name": project.model_dump(exclude={"guides", "id"}).get("name"),
         }
-        table = self.nosql_db.get_table(self.table_name)
-        if project.id is None:
-            # generate project id
-            project_id = utils.get_uuid()
-            record["project_id"] = project_id
-            table.insert(record)
-        else:
-            # 更新指定 doc_id 的记录
-            table.update(record, query={"project_id": project.id})
+        with self.nosql_db.using(self.table_name) as table:
+            if project.id is None:
+                # generate project id
+                project_id = utils.get_uuid()
+                record["project_id"] = project_id
+                table.insert(record)
+            else:
+                # 更新指定 doc_id 的记录
+                table.update(record, query={"project_id": project.id})
         return 1  # 此处返回 1 表示成功
 
     def _merge_procedure(self, source_procedure: str, target_procedure: str) -> str:

@@ -79,6 +79,19 @@ class DB(BaseModel):
             description="URI for the relational database location.",
         )
 
+    class MongoDB(BaseModel):
+        uri: str = Field(
+            default="mongodb://localhost:27017",
+            description="URI for the MongoDB server location.",
+        )
+        user: str = Field(default="", description="Username for the MongoDB server.")
+        password: SecretStr = Field(
+            default="", description="Password for the MongoDB server."
+        )
+        database: str = Field(
+            default="aarag", description="Database name for the MongoDB server."
+        )
+
     lancedb: LanceDB = Field(
         default_factory=LanceDB, description="LanceDB database configuration settings."
     )
@@ -88,6 +101,10 @@ class DB(BaseModel):
     tinydb: TinyDB = Field(
         default_factory=TinyDB, description="TinyDB database configuration settings."
     )
+    mongodb: MongoDB = Field(
+        default_factory=MongoDB, description="MongoDB database configuration settings."
+    )
+
     mode: DBMode = Field(
         default=DBMode.UPSERT, description="Mode of operation for the database."
     )

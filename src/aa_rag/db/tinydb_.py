@@ -4,33 +4,24 @@ from tinydb import TinyDB, Query
 from tinydb.table import Table
 
 from aa_rag import setting
-from aa_rag.db.base import BaseNoSQLDataBase
+from aa_rag.db.base import BaseNoSQLDataBase, singleton
 from aa_rag.gtypes.enums import NoSQLDBType
 
 
+@singleton
 class TinyDBDataBase(BaseNoSQLDataBase):
+    table: Table | None = None
     _db_type = NoSQLDBType.TINYDB
 
     def __init__(self, uri: str = setting.db.tinydb.uri, **kwargs):
         self.uri = uri
         # create parent directory if not exist
         Path(self.uri).parent.mkdir(parents=True, exist_ok=True)
-
-        self._conn_obj = self.connect()
-
         super().__init__(**kwargs)
 
     @property
     def connection(self) -> TinyDB:
         return self._conn_obj
-
-    @property
-    def table(self) -> Table:
-        if self._table_obj is None:
-            raise ValueError(
-                "Table object is not defined. Please call `get_table(table_name)` first."
-            )
-        return self._table_obj
 
     def connect(self):
         return TinyDB(self.uri)
@@ -38,11 +29,11 @@ class TinyDBDataBase(BaseNoSQLDataBase):
     def create_table(self, table_name, **kwargs):
         return self.connection.table(table_name, **kwargs)
 
-    def get_table(self, table_name, **kwargs):
+    def using(self, table_name, **kwargs):
         """
         get table object by table name, return self for with statement.
         """
-        self._table_obj = self.connection.table(table_name, **kwargs)
+        self.table = self.connection.table(table_name, **kwargs)
         return self
 
     def table_list(self):
@@ -62,6 +53,13 @@ class TinyDBDataBase(BaseNoSQLDataBase):
         insert data into table.
         """
         return self.table.insert(data)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.table = None
+        return False
+
+    def close(self):
+        self.connection.close()
 
     def _build_query_mongo(self, mongo_query: dict, q: Query = None):
         """
