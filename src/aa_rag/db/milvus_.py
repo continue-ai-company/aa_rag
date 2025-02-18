@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 
 from pandas import DataFrame
@@ -26,6 +27,11 @@ class MilvusDataBase(BaseVectorDataBase):
         db_name: str = setting.db.milvus.database,
         **kwargs,
     ):
+        # create parent directory if not exist
+        if uri.startswith("http"):
+            uri = uri
+        else:
+            Path(uri).parent.mkdir(parents=True, exist_ok=True)
         super().__init__(
             uri=uri, user=user, password=password, db_name=db_name, **kwargs
         )
@@ -41,7 +47,20 @@ class MilvusDataBase(BaseVectorDataBase):
     def create_table(self, table_name: str, schema: CollectionSchema, **kwargs):
         """Create new collection with schema"""
         if table_name not in self.table_list():
-            self.connection.create_collection(collection_name=table_name, schema=schema)
+            if kwargs.get("index_params"):
+                self.connection.create_collection(
+                    collection_name=table_name,
+                    schema=schema,
+                    index_params=kwargs.get("index_params"),
+                )
+            else:
+                index_params = self.connection.prepare_index_params()
+                index_params.add_index(
+                    field_name="vector", index_type="AUTOINDEX", metric_type="L2"
+                )
+                self.connection.create_collection(
+                    collection_name=table_name, schema=schema, index_params=index_params
+                )
         else:
             raise ValueError(f"Collection {table_name} already exists")
 

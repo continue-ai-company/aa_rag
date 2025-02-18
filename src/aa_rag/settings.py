@@ -70,7 +70,7 @@ class DB(BaseModel):
             default="", description="Password for the Milvus server."
         )
         database: str = Field(
-            default="default", description="Database name for the Milvus server."
+            default="aarag", description="Database name for the Milvus server."
         )
 
     class TinyDB(BaseModel):
