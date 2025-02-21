@@ -167,6 +167,29 @@ class Retrieve(BaseModel):
     )
 
 
+class OSS(BaseModel):
+    access_key: str = Field(
+        default=load_env("OSS_ACCESS_KEY"),
+        alias="OSS_ACCESS_KEY",
+        description="Access key for accessing OSS services.",
+    )
+
+    endpoint: str = Field(
+        default="https://s3.amazonaws.com",
+        description="Endpoint for OSS API requests.",
+    )
+    secret_key: SecretStr = Field(
+        default=load_env("OSS_SECRET_KEY"),
+        alias="OSS_SECRET_KEY",
+        description="Secret key for accessing OSS services.",
+    )
+
+    bucket: str = Field(default="aarag", description="Bucket name for storing data.")
+    cache_bucket: str = Field(
+        default="aarag-cache", description="Bucket name for storing cache data."
+    )
+
+
 class Settings(BaseSettings):
     server: Server = Field(
         default_factory=Server, description="Server configuration settings."
@@ -192,6 +215,7 @@ class Settings(BaseSettings):
         description="Language model configuration settings.",
     )
 
+    oss: OSS = Field(default_factory=OSS, description="Minio configuration settings.")
     # 这里禁用了自动的 CLI 解析
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict, FilePath
+from pydantic import BaseModel, Field, ConfigDict
 
 from aa_rag import setting
 from aa_rag.gtypes import IndexType
@@ -18,7 +18,11 @@ class IndexItem(BaseModel):
 
 
 class ChunkIndexItem(IndexItem):
-    file_path: FilePath = Field(default=..., examples=["./data/fairy_tale.txt"])
+    file_path: str = Field(default=..., examples=["./data/fairy_tale.txt"])
+    oss_cache: bool = Field(
+        default=True, examples=[True], description="Whether to use OSS cache."
+    )
+
     chunk_size: int = Field(
         default=setting.index.chunk_size, examples=[setting.index.chunk_size]
     )
