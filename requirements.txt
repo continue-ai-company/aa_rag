@@ -26,6 +26,12 @@ beautifulsoup4==4.13.3
     # via
     #   markdownify
     #   markitdown
+boto3==1.36.25
+    # via aa-rag (pyproject.toml)
+botocore==1.36.25
+    # via
+    #   boto3
+    #   s3transfer
 certifi==2025.1.31
     # via
     #   httpcore
@@ -101,6 +107,10 @@ jinja2==3.1.5
     # via fastapi
 jiter==0.8.2
     # via openai
+jmespath==1.0.1
+    # via
+    #   boto3
+    #   botocore
 jsonpatch==1.33
     # via langchain-core
 jsonpointer==3.0.0
@@ -192,7 +202,7 @@ pdfminer-six==20240706
     # via markitdown
 pillow==11.1.0
     # via python-pptx
-propcache==0.2.1
+propcache==0.3.0
     # via
     #   aiohttp
     #   yarl
@@ -200,7 +210,7 @@ protobuf==5.29.3
     # via pymilvus
 puremagic==1.28
     # via markitdown
-pyarrow==19.0.0
+pyarrow==19.0.1
     # via pylance
 pycparser==2.22
     # via cffi
@@ -215,7 +225,7 @@ pydantic==2.10.6
     #   pydantic-settings
 pydantic-core==2.27.2
     # via pydantic
-pydantic-settings==2.7.1
+pydantic-settings==2.8.0
     # via langchain-community
 pydub==0.25.1
     # via markitdown
@@ -230,7 +240,9 @@ pymilvus==2.5.4
 pymongo==4.11.1
     # via aa-rag (pyproject.toml)
 python-dateutil==2.9.0.post0
-    # via pandas
+    # via
+    #   botocore
+    #   pandas
 python-dotenv==1.0.1
     # via
     #   aa-rag (pyproject.toml)
@@ -270,6 +282,8 @@ rich==13.9.4
     #   typer
 rich-toolkit==0.13.2
     # via fastapi-cli
+s3transfer==0.11.2
+    # via boto3
 setuptools==75.8.0
     # via pymilvus
 shellingham==1.5.4
@@ -333,7 +347,9 @@ tzdata==2025.1
 ujson==5.10.0
     # via pymilvus
 urllib3==2.3.0
-    # via requests
+    # via
+    #   botocore
+    #   requests
 uvicorn==0.34.0
     # via
     #   fastapi

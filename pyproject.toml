@@ -1,6 +1,6 @@
 [project]
 name = "aa-rag"
-version = "0.2.0"
+version = "0.2.1"
 description = "RAG server for ai2apps."
 readme = "README.md"
 authors = [
@@ -19,10 +19,11 @@ dependencies = [
     "openai==1.59.3",
     "pandas>=2.2.3",
     "pymilvus>=2.5.4",
-    "pymongo>=4.11.1",
     "python-dotenv==1.0.1",
     "rank-bm25>=0.2.2",
     "tinydb>=4.8.2",
+    "boto3>=1.36.25",
+    "pymongo>=4.11.1"
 ]
 
 [build-system]
