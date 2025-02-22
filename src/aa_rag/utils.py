@@ -167,7 +167,7 @@ def parse_file(
 
         except ImportError:
             raise FileNotFoundError(
-                f"File not found: {file_path} in local file system. If the file in the oss service, please enable the online service. You can execute 'pip install aarag[online]' first."
+                f'File not found: {file_path} in local file system. If the file in the oss service, please enable the online service. You can execute `pip install "aa-rag[online]"` first.'
             )
     else:
         raise FileNotFoundError(

@@ -158,7 +158,7 @@ class DB(BaseModel):
             # check whether install lancedb package
             if importlib.util.find_spec("lancedb") is None:
                 raise ImportError(
-                    "LanceDB can only be enabled on the online service, please execute 'pip install aarag[online]'."
+                    'LanceDB can only be enabled on the online service, please execute `pip install aa-rag[online]`.'
                 )
         return v
 
@@ -168,7 +168,7 @@ class DB(BaseModel):
             # check whether install pymongo package
             if importlib.util.find_spec("pymongo") is None:
                 raise ImportError(
-                    "MongoDB can only be enabled on the online service, please execute 'pip install aarag[online]'."
+                    'MongoDB can only be enabled on the online service, please execute `pip install aa-rag[online]`.'
                 )
         return v
 
@@ -252,7 +252,7 @@ class OSS(BaseModel):
         if v:
             if importlib.util.find_spec("boto3") is None:
                 raise ImportError(
-                    "Boto3 can only be enabled on the online service, please execute 'pip install aarag[online]'."
+                    'OSS can only be enabled on the online service, please execute `pip install aa-rag[online]`.'
                 )
         return v
 
