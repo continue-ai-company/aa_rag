@@ -33,11 +33,10 @@ Install the package from PyPI:
 pip install aa-rag
 ```
 
+
 ### Installation via Source Code
 
-You can choose one of the following installation methods: **uv** (recommended) or **requirements.txt**.
-
-#### Option 1: UV Installation (Recommended)
+The project build via the `uv` tool. To install the project from source code, follow these steps:
 
 1. **Install uv:**
     - On macOS, it is recommended to use Homebrew:
@@ -61,21 +60,13 @@ You can choose one of the following installation methods: **uv** (recommended) o
     - This command will create the virtual environment in the current project directory and install all necessary
       dependencies.
 
-#### Option 2: Installation via requirements.txt
 
-1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/continue-ai-company/aa_rag.git
-   cd aa_rag
-   ```
-
-2. **Environment Setup:**
-    - You can use your existing Python environment or create a new one, based on your preference.
-
-3. **Install Dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Optional
+If you want to install the package with the `online` extra, you can use the following command:
+```bash
+pip install aa-rag[online] # install package with pip
+uv sync --extras online # install package with uv
+```
 
 ---
 
@@ -90,14 +81,7 @@ You can choose one of the following installation methods: **uv** (recommended) o
       ```bash
       uv run aarag
       ```
-
-    - If you installed the package from source code and are using the `requirements.txt` file, you can run the server using the following command:
-      ```bash
-        source ./.venv/bin/activate
-        export PYTHONPATH=$(pwd)/src # Set the PYTHONPATH to the src directory
-        python -m aa_rag.main
-        ```
-
+      
 2. **Access the API Documentation:**
     - Open your browser and navigate to:
      ```
@@ -106,40 +90,3 @@ You can choose one of the following installation methods: **uv** (recommended) o
    - This page provides an interactive Swagger UI to explore and test all available APIs.
 
 ---
-
-## Features
-
-- Full support for OpenAI API integrations.
-- Interactive API documentation using Swagger UI.
-- Simplified RAG workflow for AI applications.
-
----
-
-## GitHub
-
-Find the source code and related projects on [GitHub](https://github.com/continue-ai-company/aa_rag)
-and [AI2APPS](https://github.com/Avdpro/ai2apps).
-
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
-
-## Support
-
-For any issues or feature requests, please open a ticket in
-the [GitHub Issues](https://github.com/continue-ai-company/aa_rag/issues).
-
----
-
-## Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. Fork the repository.
-2. Create a feature branch.
-3. Commit your changes.
-4. Submit a pull request.
