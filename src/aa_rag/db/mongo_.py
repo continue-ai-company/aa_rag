@@ -1,6 +1,5 @@
 from typing import Any
 
-from pymongo import MongoClient
 
 from aa_rag import setting
 from aa_rag.db.base import BaseNoSQLDataBase, singleton
@@ -8,6 +7,10 @@ from aa_rag.db.base import BaseNoSQLDataBase, singleton
 
 @singleton
 class MongoDBDataBase(BaseNoSQLDataBase):
+    try:
+        from pymongo import MongoClient
+    except ImportError:
+        raise ImportError("MongoDB-related services can only be enabled on the online service, please ")
     _db_type = "MongoDB"
 
     collection: Any
