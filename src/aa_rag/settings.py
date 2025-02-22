@@ -2,6 +2,7 @@ import ast
 import importlib
 import os
 from pathlib import Path
+from typing import Optional
 
 import dotenv
 from pydantic import BaseModel, Field, SecretStr, field_validator
@@ -54,6 +55,11 @@ class OpenAI(BaseModel):
         alias="OPENAI_BASE_URL",
         description="Base URL for OpenAI API requests.",
     )
+
+    @field_validator("api_key")
+    def check_api_key(cls, v):
+        assert v.get_secret_value(), "API key is required."
+        return v
 
 
 class DB(BaseModel):
@@ -194,7 +200,7 @@ class Retrieve(BaseModel):
 
 
 class OSS(BaseModel):
-    access_key: str = Field(
+    access_key: Optional[str] = Field(
         default=load_env("OSS_ACCESS_KEY"),
         alias="OSS_ACCESS_KEY",
         description="Access key for accessing OSS services.",
@@ -204,7 +210,7 @@ class OSS(BaseModel):
         default="https://s3.amazonaws.com",
         description="Endpoint for OSS API requests.",
     )
-    secret_key: SecretStr = Field(
+    secret_key: Optional[SecretStr] = Field(
         default=load_env("OSS_SECRET_KEY"),
         alias="OSS_SECRET_KEY",
         description="Secret key for accessing OSS services.",
@@ -213,7 +219,8 @@ class OSS(BaseModel):
 
     bucket: str = Field(default="aarag", description="Bucket name for storing data.")
     cache_bucket: str = Field(
-        default="aarag-cache", description="Bucket name for storing cache data."
+        default=load_env("OSS_CACHE_BUCKET", "aarag-cache"),
+        description="Bucket name for storing cache data.",
     )
 
     @field_validator("access_key")

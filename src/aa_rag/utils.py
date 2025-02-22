@@ -97,8 +97,10 @@ def parse_file(
             try:
                 s3_client.head_bucket(Bucket=setting.oss.cache_bucket)
                 have_cache_bucket = True
-            except ClientError as e:
-                logging.warning(f"Cache bucket check failed: {e}. Disabling cache.")
+            except ClientError:
+                logging.warning(
+                    f"Cache bucket: {setting.oss.cache_bucket} check failed. Disabling cache."
+                )
 
             if have_cache_bucket and use_cache:
                 try:
@@ -108,8 +110,9 @@ def parse_file(
                         VersionId=cache_version_id,
                     )
                     have_cache_file = True
-                except ClientError as e:
-                    logging.warning(f"Cache file check failed: {e}. Disabling cache.")
+                except ClientError:
+                    # no cache file
+                    pass
 
                 if have_cache_bucket and have_cache_file:
                     target_bucket, target_file_path, target_version_id = (
@@ -167,11 +170,11 @@ def parse_file(
 
         except ImportError:
             raise FileNotFoundError(
-                f'File not found: {file_path} in local file system. If the file in the oss service, please enable the online service. You can execute `pip install "aa-rag[online]"` first.'
+                f"File not found: {file_path} in local file system or oss service."
             )
     else:
         raise FileNotFoundError(
-            f"File not found: {file_path} in local file system or oss service."
+            f'File not found: {file_path} in local file system. If the file in the oss service, please enable the online service. You can execute `pip install "aa-rag[online]"` first.'
         )
 
     return Document(page_content=content_str, metadata={"source": file_path.name})
