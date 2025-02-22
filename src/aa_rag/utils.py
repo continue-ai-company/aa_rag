@@ -166,9 +166,13 @@ def parse_file(
                 )
 
         except ImportError:
-            raise ImportError("boto3 is required for using oss service.")
+            raise FileNotFoundError(
+                f"File not found: {file_path} in local file system. If the file in the oss service, please enable the online service. You can execute 'pip install aarag[online]' first."
+            )
     else:
-        raise FileNotFoundError(f"File not found: {file_path}")
+        raise FileNotFoundError(
+            f"File not found: {file_path} in local file system or oss service."
+        )
 
     return Document(page_content=content_str, metadata={"source": file_path.name})
 

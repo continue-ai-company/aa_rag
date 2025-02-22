@@ -1,9 +1,10 @@
 import ast
+import importlib
 import os
 from pathlib import Path
 
 import dotenv
-from pydantic import BaseModel, Field, SecretStr
+from pydantic import BaseModel, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from aa_rag.gtypes.enums import (
@@ -151,6 +152,26 @@ class DB(BaseModel):
         default=NoSQLDBType.TINYDB, description="Type of NoSQL database used."
     )
 
+    @field_validator("vector")
+    def check_vector_db(cls, v):
+        if v == VectorDBType.LANCE:
+            # check whether install lancedb package
+            if importlib.util.find_spec("lancedb") is None:
+                raise ImportError(
+                    "LanceDB can only be enabled on the online service, please execute 'pip install aarag[online]'."
+                )
+        return v
+
+    @field_validator("nosql")
+    def check_nosql_db(cls, v):
+        if v == NoSQLDBType.MONGODB:
+            # check whether install pymongo package
+            if importlib.util.find_spec("pymongo") is None:
+                raise ImportError(
+                    "MongoDB can only be enabled on the online service, please execute 'pip install aarag[online]'."
+                )
+        return v
+
 
 class Embedding(BaseModel):
     model: str = Field(
@@ -218,12 +239,22 @@ class OSS(BaseModel):
         default=load_env("OSS_SECRET_KEY"),
         alias="OSS_SECRET_KEY",
         description="Secret key for accessing OSS services.",
+        validate_default=True,
     )
 
     bucket: str = Field(default="aarag", description="Bucket name for storing data.")
     cache_bucket: str = Field(
         default="aarag-cache", description="Bucket name for storing cache data."
     )
+
+    @field_validator("access_key")
+    def check_access_key(cls, v):
+        if v:
+            if importlib.util.find_spec("boto3") is None:
+                raise ImportError(
+                    "Boto3 can only be enabled on the online service, please execute 'pip install aarag[online]'."
+                )
+        return v
 
 
 class Settings(BaseSettings):

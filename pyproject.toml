@@ -1,6 +1,6 @@
 [project]
 name = "aa-rag"
-version = "0.2.1"
+version = "0.2.2"
 description = "RAG server for ai2apps."
 readme = "README.md"
 authors = [
@@ -9,7 +9,6 @@ authors = [
 requires-python = ">=3.10"
 dependencies = [
     "fastapi[standard]>=0.115.6",
-    "lancedb==0.17.0",
     "langchain==0.3.14",
     "langchain-community==0.3.14",
     "langchain-core==0.3.29",
@@ -22,8 +21,6 @@ dependencies = [
     "python-dotenv==1.0.1",
     "rank-bm25>=0.2.2",
     "tinydb>=4.8.2",
-    "boto3>=1.36.25",
-    "pymongo>=4.11.1",
     "pydantic-settings>=2.8.0",
 ]
 
@@ -34,6 +31,13 @@ build-backend = "hatchling.build"
 
 [project.scripts]
 aarag = "aa_rag.main:startup"
+
+[project.optional-dependencies]
+online = [
+    "boto3>=1.36.25",
+    "lancedb>=0.19.0",
+    "pymongo>=4.11.1",
+]
 
 [dependency-groups]
 dev = [

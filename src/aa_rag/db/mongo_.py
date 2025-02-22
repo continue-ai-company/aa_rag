@@ -1,16 +1,11 @@
 from typing import Any
 
-
 from aa_rag import setting
 from aa_rag.db.base import BaseNoSQLDataBase, singleton
 
 
 @singleton
 class MongoDBDataBase(BaseNoSQLDataBase):
-    try:
-        from pymongo import MongoClient
-    except ImportError:
-        raise ImportError("MongoDB-related services can only be enabled on the online service, please ")
     _db_type = "MongoDB"
 
     collection: Any
@@ -32,13 +27,14 @@ class MongoDBDataBase(BaseNoSQLDataBase):
 
         super().__init__(uri=uri, db_name=db_name, **kwargs)
 
-    @property
-    def connection(self) -> MongoClient:
-        """Return the MongoDB connection client object."""
-        return self._conn_obj
-
     def connect(self, **kwargs):
         """Establish and return a MongoDB client connection."""
+        try:
+            from pymongo import MongoClient
+        except ImportError:
+            raise ImportError(
+                "MongoDB can only be enabled on the online service, please execute 'pip install aarag[online]'."
+            )
         client = MongoClient(kwargs.get("uri"))
 
         return client[kwargs.get("db_name")]
