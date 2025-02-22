@@ -34,6 +34,42 @@ def load_env(key: str, default=None):
         return value
 
 
+def mask_secrets(model: BaseModel) -> dict:
+    """
+    Mask secrets in the model.
+    # !! It should be implemented by pydantic-settings, but it's not working now.
+    """
+
+    def recursive_mask(obj):
+        if isinstance(obj, BaseModel):
+            masked = {}
+            for name, field in obj.model_fields.items():  # 使用__fields__获取字段定义
+                value = getattr(obj, name)
+
+                # 检查字段类型是否是SecretStr
+                if field.annotation is SecretStr:
+                    masked[name] = (
+                        value[:2] + len(value[2:-4]) * "*" + value[-4:]
+                        if value
+                        else "****"
+                    )
+                # 处理嵌套模型
+                elif isinstance(value, BaseModel):
+                    masked[name] = recursive_mask(value)
+                # 处理列表中的模型（可选）
+                elif isinstance(value, list):
+                    masked[name] = [
+                        recursive_mask(i) if isinstance(i, BaseModel) else i
+                        for i in value
+                    ]
+                else:
+                    masked[name] = value
+            return masked
+        return obj
+
+    return recursive_mask(model)
+
+
 class Server(BaseModel):
     host: str = Field(default="0.0.0.0", description="The host address for the server.")
     port: int = Field(
