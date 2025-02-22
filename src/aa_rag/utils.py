@@ -51,7 +51,7 @@ def parse_file(
                 content_str = f.read()
         else:
             content_str = md_parser.convert(str(file_path.absolute())).text_content
-    elif setting.oss.access_key and setting.oss.secret_key:
+    elif setting.oss.access_key and setting.oss.secret_key.get_secret_value():
         try:
             import boto3
             from botocore.exceptions import ClientError
@@ -62,7 +62,7 @@ def parse_file(
                     "s3",
                     endpoint_url=setting.oss.endpoint,
                     aws_access_key_id=setting.oss.access_key,
-                    aws_secret_access_key=setting.oss.secret_key,
+                    aws_secret_access_key=setting.oss.secret_key.get_secret_value(),
                     use_ssl=False
                     if setting.oss.endpoint.startswith("http://")
                     else True,

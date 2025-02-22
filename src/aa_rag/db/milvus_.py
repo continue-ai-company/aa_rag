@@ -23,7 +23,7 @@ class MilvusDataBase(BaseVectorDataBase):
         self,
         uri: str = setting.db.milvus.uri,
         user: str = setting.db.milvus.user,
-        password: str = setting.db.milvus.password,
+        password: str = setting.db.milvus.password.get_secret_value(),
         db_name: str = setting.db.milvus.database,
         **kwargs,
     ):

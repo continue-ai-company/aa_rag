@@ -29,7 +29,7 @@ class LanceDBDataBase(BaseVectorDataBase):
             import lancedb
         except ImportError:
             raise ImportError(
-                'LanceDB can only be enabled on the online service, please execute `pip install aa-rag[online]`.'
+                "LanceDB can only be enabled on the online service, please execute `pip install aa-rag[online]`."
             )
         return lancedb.connect(self.uri, **kwargs)
 

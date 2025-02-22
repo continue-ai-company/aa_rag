@@ -64,7 +64,7 @@ The project build via the `uv` tool. To install the project from source code, fo
 ### Optional
 If you want to install the package with the `online` extra, you can use the following command:
 ```bash
-pip install aa-rag[online] # install package with pip
+pip install "aa-rag[online]" # install package with pip
 uv sync --extras online # install package with uv
 ```
 

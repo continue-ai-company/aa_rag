@@ -33,7 +33,7 @@ class MongoDBDataBase(BaseNoSQLDataBase):
             from pymongo import MongoClient
         except ImportError:
             raise ImportError(
-                'MongoDB can only be enabled on the online service, please execute `pip install aa-rag[online]`.'
+                "MongoDB can only be enabled on the online service, please execute `pip install aa-rag[online]`."
             )
         client = MongoClient(kwargs.get("uri"))
 

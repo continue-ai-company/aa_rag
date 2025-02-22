@@ -35,42 +35,6 @@ def load_env(key: str, default=None):
         return value
 
 
-def mask_secrets(model: BaseModel) -> dict:
-    """
-    Mask secrets in the model.
-    # !! It should be implemented by pydantic-settings, but it's not working now.
-    """
-
-    def recursive_mask(obj):
-        if isinstance(obj, BaseModel):
-            masked = {}
-            for name, field in obj.model_fields.items():  # 使用__fields__获取字段定义
-                value = getattr(obj, name)
-
-                # 检查字段类型是否是SecretStr
-                if field.annotation is SecretStr:
-                    masked[name] = (
-                        value[:2] + len(value[2:-4]) * "*" + value[-4:]
-                        if value
-                        else "****"
-                    )
-                # 处理嵌套模型
-                elif isinstance(value, BaseModel):
-                    masked[name] = recursive_mask(value)
-                # 处理列表中的模型（可选）
-                elif isinstance(value, list):
-                    masked[name] = [
-                        recursive_mask(i) if isinstance(i, BaseModel) else i
-                        for i in value
-                    ]
-                else:
-                    masked[name] = value
-            return masked
-        return obj
-
-    return recursive_mask(model)
-
-
 class Server(BaseModel):
     host: str = Field(default="0.0.0.0", description="The host address for the server.")
     port: int = Field(
@@ -83,6 +47,7 @@ class OpenAI(BaseModel):
         default=load_env("OPENAI_API_KEY"),
         alias="OPENAI_API_KEY",
         description="API key for accessing OpenAI services.",
+        validate_default=True,
     )
     base_url: str = Field(
         default=load_env("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -104,7 +69,9 @@ class DB(BaseModel):
         )
         user: str = Field(default="", description="Username for the Milvus server.")
         password: SecretStr = Field(
-            default="", description="Password for the Milvus server."
+            default="",
+            description="Password for the Milvus server.",
+            validate_default=True,
         )
         database: str = Field(
             default="aarag", description="Database name for the Milvus server."
@@ -123,7 +90,9 @@ class DB(BaseModel):
         )
         user: str = Field(default="", description="Username for the MongoDB server.")
         password: SecretStr = Field(
-            default="", description="Password for the MongoDB server."
+            default="",
+            description="Password for the MongoDB server.",
+            validate_default=True,
         )
         database: str = Field(
             default="aarag", description="Database name for the MongoDB server."
@@ -158,7 +127,7 @@ class DB(BaseModel):
             # check whether install lancedb package
             if importlib.util.find_spec("lancedb") is None:
                 raise ImportError(
-                    'LanceDB can only be enabled on the online service, please execute `pip install aa-rag[online]`.'
+                    "LanceDB can only be enabled on the online service, please execute `pip install aa-rag[online]`."
                 )
         return v
 
@@ -168,7 +137,7 @@ class DB(BaseModel):
             # check whether install pymongo package
             if importlib.util.find_spec("pymongo") is None:
                 raise ImportError(
-                    'MongoDB can only be enabled on the online service, please execute `pip install aa-rag[online]`.'
+                    "MongoDB can only be enabled on the online service, please execute `pip install aa-rag[online]`."
                 )
         return v
 
@@ -252,7 +221,7 @@ class OSS(BaseModel):
         if v:
             if importlib.util.find_spec("boto3") is None:
                 raise ImportError(
-                    'OSS can only be enabled on the online service, please execute `pip install aa-rag[online]`.'
+                    "OSS can only be enabled on the online service, please execute `pip install aa-rag[online]`."
                 )
         return v
 

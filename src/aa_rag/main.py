@@ -3,7 +3,6 @@ from fastapi import FastAPI
 from aa_rag import setting
 from aa_rag.exceptions import handle_exception_error
 from aa_rag.router import qa, solution, index, retrieve
-from aa_rag.settings import mask_secrets
 
 app = FastAPI()
 app.include_router(qa.router)
@@ -20,7 +19,7 @@ async def root():
 
 @app.get("/default")
 async def default():
-    return mask_secrets(setting)
+    return setting.model_dump()
 
 
 def startup():
