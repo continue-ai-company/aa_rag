@@ -9,11 +9,11 @@ from pydantic import BaseModel, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from aa_rag.gtypes.enums import (
-    IndexType,
     DBMode,
     RetrieveType,
     VectorDBType,
     NoSQLDBType,
+    EngineType,
 )
 
 dotenv.load_dotenv(Path(".env").absolute())
@@ -162,17 +162,50 @@ class LLM(BaseModel):
     )
 
 
-class Index(BaseModel):
-    type: IndexType = Field(
-        default=IndexType.CHUNK, description="Type of index used for data retrieval."
+class Engine(BaseModel):
+    class SimpleChunk(BaseModel):
+        class Index(BaseModel):
+            chunk_size: int = Field(
+                default=512, description="Size of each chunk in the index."
+            )
+            overlap_size: int = Field(
+                default=100, description="Overlap size between chunks in the index."
+            )
+
+        class Retrieve(BaseModel):
+            class Weight(BaseModel):
+                dense: float = Field(
+                    default=0.5, description="Weight for dense retrieval methods."
+                )
+                sparse: float = Field(
+                    default=0.5, description="Weight for sparse retrieval methods."
+                )
+
+            k: int = Field(default=3, description="Number of top results to retrieve.")
+            weight: Weight = Field(
+                default_factory=Weight,
+                description="Weights for different retrieval methods.",
+            )
+            type: RetrieveType = Field(
+                default=RetrieveType.HYBRID,
+                description="Type of retrieval strategy used.",
+            )
+
+        index: Index = Field(
+            default_factory=Index, description="Index configuration settings."
+        )
+        retrieve: Retrieve = Field(
+            default_factory=Retrieve, description="Retrieve configuration settings."
+        )
+
+    type: EngineType = Field(
+        default=EngineType.SIMPLE_CHUNK,
+        description="Type of index used for data retrieval.",
     )
-    chunk_size: int = Field(
-        default=load_env("INDEX_CHUNK_SIZE", 512),
-        description="Size of each chunk in the index.",
-    )
-    overlap_size: int = Field(
-        default=load_env("INDEX_OVERLAP_SIZE", 100),
-        description="Overlap size between chunks in the index.",
+
+    simple_chunk: SimpleChunk = Field(
+        default_factory=SimpleChunk,
+        description="Simple chunk index configuration settings.",
     )
 
 
@@ -245,14 +278,9 @@ class Settings(BaseSettings):
     embedding: Embedding = Field(
         default_factory=Embedding, description="Embedding model configuration settings."
     )
-    index: Index = Field(
-        default_factory=Index, description="Index configuration settings."
+    engine: Engine = Field(
+        default_factory=Engine, description="Indexing engine configuration settings."
     )
-    retrieve: Retrieve = Field(
-        default_factory=Retrieve,
-        description="Retrieval strategy configuration settings.",
-    )
-
     llm: LLM = Field(
         default_factory=LLM,
         description="Language model configuration settings.",

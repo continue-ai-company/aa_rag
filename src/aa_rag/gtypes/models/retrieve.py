@@ -1,56 +1,46 @@
 from pydantic import BaseModel, Field, ConfigDict
 
 from aa_rag import setting
-from aa_rag.gtypes import IndexType
-from aa_rag.gtypes.enums import RetrieveType
+from aa_rag.gtypes.enums import RetrieveType, EngineType
 from aa_rag.gtypes.models.base import BaseResponse
+from aa_rag.gtypes.models.engine import SimpleChunkEngineItem
+
+
+class BaseRetrieveItem(BaseModel):
+    query: str = Field(default=..., examples=["What is the story of Cinderella?"])
 
 
 class RetrieveItem(BaseModel):
-    knowledge_name: str = Field(default=..., examples=["fairy_tale"])
-    index_type: IndexType = Field(
-        default=setting.index.type, examples=[setting.index.type]
-    )
-    retrieve_type: RetrieveType = Field(
-        default=setting.retrieve.type, examples=[setting.retrieve.type]
-    )
-    embedding_model: str = Field(
-        default=setting.embedding.model, examples=[setting.embedding.model]
-    )
-
-    top_k: int = Field(default=setting.retrieve.type, examples=[setting.retrieve.type])
-    only_page_content: bool = Field(
-        default=setting.retrieve.only_page_content,
-        examples=[setting.retrieve.only_page_content],
+    engine_type: EngineType = Field(
+        default=setting.engine.type, examples=[setting.engine.type]
     )
 
     model_config = ConfigDict(extra="allow")
 
 
-class HybridRetrieveItem(RetrieveItem):
-    query: str = Field(default=..., examples=["What is the story of Cinderella?"])
-    weight_dense: float = Field(
-        default=setting.retrieve.weight.dense,
-        examples=[setting.retrieve.weight.dense],
+class SimpleChunkRetrieveItem(SimpleChunkEngineItem, BaseRetrieveItem):
+    top_k: int = Field(
+        default=setting.engine.simple_chunk.retrieve.k,
+        examples=[setting.engine.simple_chunk.retrieve.k],
+        description="Number of top results to retrieve.",
     )
-    weight_sparse: float = Field(
-        default=setting.retrieve.weight.sparse,
-        examples=[setting.retrieve.weight.sparse],
+    retrieve_type: RetrieveType = Field(
+        default=setting.engine.simple_chunk.retrieve.type,
+        examples=[setting.engine.simple_chunk.retrieve.type],
+        description="Type of retrieval strategy used.",
     )
 
-    model_config = ConfigDict(extra="forbid")
+    dense_weight: float = Field(
+        default=setting.engine.simple_chunk.retrieve.weight.dense,
+        examples=[setting.engine.simple_chunk.retrieve.weight.dense],
+        description="Weight for dense retrieval methods. Only used for hybrid retrieve type.",
+    )
 
-
-class DenseRetrieveItem(RetrieveItem):
-    query: str = Field(default=..., examples=["What is the story of Cinderella?"])
-
-    model_config = ConfigDict(extra="forbid")
-
-
-class BM25RetrieveItem(RetrieveItem):
-    query: str = Field(default=..., examples=["What is the story of Cinderella?"])
-
-    model_config = ConfigDict(extra="forbid")
+    sparse_weight: float = Field(
+        default=setting.engine.simple_chunk.retrieve.weight.sparse,
+        examples=[setting.engine.simple_chunk.retrieve.weight.sparse],
+        description="Weight for sparse retrieval methods. Only used for hybrid retrieve type.",
+    )
 
 
 class RetrieveResponse(BaseResponse):

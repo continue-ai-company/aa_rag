@@ -1,44 +1,47 @@
+from os import PathLike
+from typing import List
+
 from pydantic import BaseModel, Field, ConfigDict
 
 from aa_rag import setting
-from aa_rag.gtypes import IndexType
+from aa_rag.gtypes.enums import EngineType
 from aa_rag.gtypes.models.base import BaseResponse
+from aa_rag.gtypes.models.engine import SimpleChunkEngineItem
 
 
-class IndexItem(BaseModel):
-    knowledge_name: str = Field(default=..., examples=["fairy_tale"])
-    index_type: IndexType = Field(
-        default=setting.index.type, examples=[setting.index.type]
+class BaseIndexItem(BaseModel):
+    file_path: PathLike = Field(
+        default=...,
+        examples=[
+            "user_manual/call_llm.md",
+        ],
+        description="Path to the file to be indexed.",
     )
-    embedding_model: str = Field(
-        default=setting.embedding.model, examples=[setting.embedding.model]
+
+    use_cache: bool = Field(
+        default=True, examples=[True], description="Whether to use OSS cache."
+    )
+
+
+class IndexItem(BaseIndexItem):
+    engine_type: EngineType = Field(
+        default=setting.engine.type, examples=[setting.engine.type]
     )
 
     model_config = ConfigDict(extra="allow")
 
 
-class ChunkIndexItem(IndexItem):
-    file_path: str = Field(default=..., examples=["./data/fairy_tale.txt"])
-    oss_cache: bool = Field(
-        default=True, examples=[True], description="Whether to use OSS cache."
-    )
+class SimpleChunkIndexItem(SimpleChunkEngineItem, BaseIndexItem):
+    pass
 
-    chunk_size: int = Field(
-        default=setting.index.chunk_size, examples=[setting.index.chunk_size]
-    )
-    chunk_overlap: int = Field(
-        default=setting.index.overlap_size, examples=[setting.index.overlap_size]
-    )
-    index_type: IndexType = Field(
-        default=setting.index.type, examples=[setting.index.type]
-    )
-
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="allow")
 
 
 class IndexResponse(BaseResponse):
     class Data(BaseModel):
-        table_name: str = Field(..., examples=["fairy_tale_chunk_text_embedding_model"])
+        table_name: str | List[str] = Field(
+            ..., examples=["fairy_tale_chunk_text_embedding_model"]
+        )
 
     message: str = Field(
         default="Indexing completed via ChunkIndex",

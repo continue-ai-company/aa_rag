@@ -51,6 +51,7 @@ def parse_file(
                 content_str = f.read()
         else:
             content_str = md_parser.convert(str(file_path.absolute())).text_content
+        source = str(file_path)  # write to Document.metadata
     elif setting.oss.access_key and setting.oss.secret_key.get_secret_value():
         try:
             import boto3
@@ -161,6 +162,8 @@ def parse_file(
                 convert_result = md_parser.convert(url)
                 content_str = convert_result.text_content
 
+            source = f"oss://{setting.oss.bucket}/{str(file_path)}"
+
             if have_cache_bucket and not have_cache_file:
                 s3_client.put_object(
                     Bucket=setting.oss.cache_bucket,
@@ -177,7 +180,7 @@ def parse_file(
             f'File not found: {file_path} in local file system. If the file in the oss service, please enable the online service. You can execute `pip install "aa-rag[online]"` first.'
         )
 
-    return Document(page_content=content_str, metadata={"source": file_path.name})
+    return Document(page_content=content_str, metadata={"source": source})
 
 
 def calculate_md5(input_string: str) -> str:
@@ -215,7 +218,7 @@ def get_embedding_model(
     embeddings = OpenAIEmbeddings(
         model=model_name,
         dimensions=1536,
-        api_key=setting.openai.api_key,
+        api_key=setting.openai.api_key.get_secret_value(),
         base_url=setting.openai.base_url,
     )
     if return_dim:
