@@ -180,13 +180,17 @@ class SimpleChunk(BaseEngine):
         )
         self._indexed_data = splitter.split_documents(source_docs)
 
-    def _build_store(self, mode: DBMode = setting.db.mode) -> Any:
+    def _build_store(self, mode: DBMode | str = setting.db.mode) -> Any:
         """
         Build the store by inserting or updating the indexed data in the vector database.
 
         Args:
             mode (DBMode): The mode of operation (INSERT, UPSERT, OVERWRITE).
         """
+        if isinstance(mode, str):
+            mode: DBMode = DBMode(mode)
+
+
         # detects whether the metadata has an id field. If not, it will be generated id based on page_content via md5 algorithm.
         id_s = [
             doc.metadata.get("id", utils.calculate_md5(doc.page_content))
