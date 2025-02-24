@@ -95,7 +95,7 @@ class MilvusDataBase(BaseVectorDataBase):
         """Delete entities with boolean expression"""
         assert self.using_collection_name, "Collection not loaded. Use using() first"
         return self.connection.delete(
-            collection_name=self.using_collection_name, filter=where, **kwargs
+            self.using_collection_name, where, **kwargs
         )
 
     def upsert(self, data: list[dict] | DataFrame, **kwargs):
@@ -107,7 +107,7 @@ class MilvusDataBase(BaseVectorDataBase):
 
     def overwrite(self, data: list[dict] | DataFrame, **kwargs):
         assert self.using_collection_name, "Collection not loaded. Use using() first"
-        self.delete(where="")  # truncate collection
+        self.delete(where="id is not null")  # truncate collection
         return self.insert(data=data)
 
     # def search(
