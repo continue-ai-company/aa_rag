@@ -34,7 +34,7 @@ class IndexItem(BaseIndexItem):
 class SimpleChunkIndexItem(SimpleChunkEngineItem, BaseIndexItem):
     pass
 
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="forbid")
 
 
 class IndexResponse(BaseResponse):
