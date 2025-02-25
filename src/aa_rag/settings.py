@@ -1,10 +1,9 @@
 import ast
 import importlib
-import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 
-import dotenv
+from dotenv.main import DotEnv
 from pydantic import BaseModel, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -16,24 +15,44 @@ from aa_rag.gtypes.enums import (
     EngineType,
 )
 
-dotenv.load_dotenv(Path(".env").absolute())
 
-
-def load_env(key: str, default=None):
+def load_env(key: str, default: Any = None):
     """
     Load environment variable from .env file. Convert to python object if possible.
-    Args:
-        key: Environment variable key.
-        default: Default value if key not found.
-    Returns:
-        Python object.
-    """
 
-    value = os.getenv(key, default)
-    try:
-        return ast.literal_eval(value)
-    except Exception:
-        return value
+    Args:
+        key (str): Environment variable key.
+        default (Any, optional): Default value if key not found. Defaults to None.If default is a tuple,
+         it will be treated as a pair of values for development and production environments.
+
+    Returns:
+        Any: Python object representing the environment variable value or the default value.
+    """
+    env = DotEnv(Path(".env").absolute(), verbose=False, encoding="utf-8")
+
+    if isinstance(default, tuple):
+        env_mode = env.get("ENVIRONMENT")
+        env_mode = env_mode.lower() if env_mode else "development"
+        dev_dft, prod_dft = default
+        match env_mode.lower():
+            case "development" | "dev":
+                default = dev_dft
+            case "production" | "prod":
+                default = prod_dft
+            case _:
+                default = dev_dft
+    else:
+        default = default
+
+    value = env.get(key)
+
+    if value is None:
+        return default
+    else:
+        try:
+            return ast.literal_eval(value)
+        except (ValueError, SyntaxError):
+            return value
 
 
 class Server(BaseModel):
@@ -70,7 +89,9 @@ class DB(BaseModel):
 
     class Milvus(BaseModel):
         uri: str = Field(
-            default="./db/milvus.db",
+            default=load_env(
+                "DB_MILVUS_URI", ("./db/milvus.db", "http://localhost:19530")
+            ),
             description="URI for the Milvus server location.",
         )
         user: str = Field(default="", description="Username for the Milvus server.")
@@ -124,7 +145,8 @@ class DB(BaseModel):
         default=VectorDBType.MILVUS, description="Type of vector database used."
     )
     nosql: NoSQLDBType = Field(
-        default=NoSQLDBType.TINYDB, description="Type of NoSQL database used."
+        default=load_env("DB_NOSQL", (NoSQLDBType.TINYDB, NoSQLDBType.MONGODB)),
+        description="Type of NoSQL database used.",
     )
 
     @field_validator("vector")
@@ -224,11 +246,6 @@ class Retrieve(BaseModel):
     k: int = Field(default=3, description="Number of top results to retrieve.")
     weight: Weight = Field(
         default_factory=Weight, description="Weights for different retrieval methods."
-    )
-    only_page_content: bool = Field(
-        default=load_env("ONLY_PAGE_CONTENT", False),
-        alias="ONLY_PAGE_CONTENT",
-        description="Flag to retrieve only page content.",
     )
 
 
