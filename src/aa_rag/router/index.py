@@ -1,10 +1,15 @@
 from fastapi import APIRouter, HTTPException
 
-from aa_rag import utils
 from aa_rag.engine.simple_chunk import SimpleChunk
 from aa_rag.gtypes.enums import EngineType
 from aa_rag.gtypes.models.engine import SimpleChunkEngineItem
-from aa_rag.gtypes.models.index import IndexItem, SimpleChunkIndexItem, IndexResponse
+from aa_rag.gtypes.models.index import (
+    IndexItem,
+    SimpleChunkIndexItem,
+    IndexResponse,
+)
+from aa_rag.gtypes.models.parse import ParserNeedItem
+from aa_rag.parse.markitdown import MarkitDownParser
 
 router = APIRouter(
     prefix="/index", tags=["Index"], responses={404: {"description": "Not found"}}
@@ -24,8 +29,15 @@ async def root(item: IndexItem):
 @router.post("/chunk", tags=["SimpleChunk"])
 async def chunk_index(item: SimpleChunkIndexItem) -> IndexResponse:
     # parse content
-    source_data = utils.parse_file(str(item.file_path), use_cache=item.use_cache)
+    parse_need_fields = ParserNeedItem.model_fields
+    assert isinstance(parse_need_fields, dict), "parse_need_fields must be a dict"
 
+    parser = MarkitDownParser()
+    source_data = await parser.aparse(
+        **item.model_dump(include=set(parse_need_fields.keys()))
+    )
+
+    # index content
     engine_fields = SimpleChunkEngineItem.model_fields
     assert isinstance(engine_fields, dict), "engine_fields must be a dict"
 

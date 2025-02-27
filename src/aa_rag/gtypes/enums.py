@@ -47,3 +47,10 @@ class EngineType(Enum):
 
     def __str__(self):
         return f"{self.value}"
+
+
+class ParsingType(Enum):
+    MARKITDOWN: str = "markitdown"
+
+    def __str__(self):
+        return f"{self.value}"

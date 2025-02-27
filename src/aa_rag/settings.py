@@ -180,7 +180,11 @@ class Embedding(BaseModel):
 class LLM(BaseModel):
     model: str = Field(
         default="gpt-4o",
-        description="Model used for generating text embeddings.",
+        description="Model used for understanding text.",
+    )
+    multimodal_model: str = Field(
+        default="gpt-4o",
+        description="Model used for understanding the image.",
     )
 
 
