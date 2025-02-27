@@ -190,7 +190,6 @@ class SimpleChunk(BaseEngine):
         if isinstance(mode, str):
             mode: DBMode = DBMode(mode)
 
-
         # detects whether the metadata has an id field. If not, it will be generated id based on page_content via md5 algorithm.
         id_s = [
             doc.metadata.get("id", utils.calculate_md5(doc.page_content))
