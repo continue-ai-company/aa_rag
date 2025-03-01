@@ -42,15 +42,15 @@ class ParserNeedItem(BaseModel):
         examples=[
             "user_manual/call_llm.md",
         ],
-        description="Path to the file to be indexed. The file can from local file or OSS. Attention: The file_path and content cannot be both None or both provided.",
+        description="Path to the file to be indexed. The file can from local file or OSS. Attention: The file_path and content cannot be both None.",
     )
 
     content: Optional[str] = Field(
         default=None,
         examples=[
-            "# Call LLM\n\n## Introduction\n\nThis is a user manual for calling LLM. Attention: The file_path and content cannot be both None or both provided.",
+            "# Call LLM\n\n## Introduction\n\nThis is a user manual for calling LLM.",
         ],
-        description="The content to be indexed.",
+        description="The content to be indexed. Attention: The file_path and content cannot be both None",
     )
     use_cache: bool = Field(
         default=True, examples=[True], description="Whether to use OSS cache."
@@ -68,6 +68,5 @@ class ParserNeedItem(BaseModel):
         # Check if both file_path and content are None
         if self.file_path is None and self.content is None:
             raise ValueError("Either file_path or content must be provided.")
-        if self.file_path is not None and self.content is not None:
-            raise ValueError("Only one of file_path or content can be provided.")
+
         return self

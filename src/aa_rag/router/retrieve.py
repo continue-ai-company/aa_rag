@@ -1,8 +1,11 @@
 from fastapi import APIRouter, HTTPException
 
-from aa_rag.engine.simple_chunk import SimpleChunk
+from aa_rag.engine.simple_chunk import (
+    SimpleChunk,
+    SimpleChunkRetrieveParams,
+    SimpleChunkInitParams,
+)
 from aa_rag.gtypes.enums import EngineType
-from aa_rag.gtypes.models.engine import SimpleChunkEngineItem
 from aa_rag.gtypes.models.retrieve import (
     RetrieveItem,
     RetrieveResponse,
@@ -17,7 +20,7 @@ router = APIRouter(
 @router.post("/")
 async def root(item: RetrieveItem):
     match item.engine_type:
-        case EngineType.SIMPLE_CHUNK:
+        case EngineType.SimpleChunk:
             chunk_item = SimpleChunkRetrieveItem(**item.model_dump())
             return await chunk_retrieve(chunk_item)
         case _:
@@ -26,12 +29,9 @@ async def root(item: RetrieveItem):
 
 @router.post("/chunk", tags=["SimpleChunk"])
 async def chunk_retrieve(item: SimpleChunkRetrieveItem) -> RetrieveResponse:
-    engine_fields = SimpleChunkEngineItem.model_fields
-    assert isinstance(engine_fields, dict), "engine_fields must be a dict"
+    engine = SimpleChunk(SimpleChunkInitParams(**item.model_dump()))
 
-    engine = SimpleChunk(**item.model_dump(include=set(engine_fields.keys())))
-
-    result = engine.retrieve(**item.model_dump(exclude=set(engine_fields.keys())))
+    result = engine.retrieve(SimpleChunkRetrieveParams(**item.model_dump()))
 
     return RetrieveResponse(
         code=200,

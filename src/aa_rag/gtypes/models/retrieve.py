@@ -1,13 +1,13 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 from aa_rag import setting
-from aa_rag.gtypes.enums import RetrieveType, EngineType
+from aa_rag.engine.simple_chunk import SimpleChunkRetrieveParams, SimpleChunkInitParams
+from aa_rag.gtypes.enums import EngineType
 from aa_rag.gtypes.models.base import BaseResponse
-from aa_rag.gtypes.models.engine import SimpleChunkEngineItem
 
 
 class BaseRetrieveItem(BaseModel):
-    query: str = Field(default=..., examples=["What is the story of Cinderella?"])
+    pass
 
 
 class RetrieveItem(BaseModel):
@@ -18,34 +18,29 @@ class RetrieveItem(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-class SimpleChunkRetrieveItem(SimpleChunkEngineItem, BaseRetrieveItem):
-    top_k: int = Field(
-        default=setting.engine.simple_chunk.retrieve.k,
-        examples=[setting.engine.simple_chunk.retrieve.k],
-        description="Number of top results to retrieve.",
-    )
-    retrieve_type: RetrieveType = Field(
-        default=setting.engine.simple_chunk.retrieve.type,
-        examples=[setting.engine.simple_chunk.retrieve.type],
-        description="Type of retrieval strategy used.",
-    )
-
-    dense_weight: float = Field(
-        default=setting.engine.simple_chunk.retrieve.weight.dense,
-        examples=[setting.engine.simple_chunk.retrieve.weight.dense],
-        description="Weight for dense retrieval methods. Only used for hybrid retrieve type.",
-    )
-
-    sparse_weight: float = Field(
-        default=setting.engine.simple_chunk.retrieve.weight.sparse,
-        examples=[setting.engine.simple_chunk.retrieve.weight.sparse],
-        description="Weight for sparse retrieval methods. Only used for hybrid retrieve type.",
-    )
+class SimpleChunkRetrieveItem(
+    SimpleChunkInitParams, SimpleChunkRetrieveParams, BaseRetrieveItem
+):
+    pass
 
 
 class RetrieveResponse(BaseResponse):
     class Data(BaseModel):
         documents: list = Field(default=..., examples=[[]])
+
+        @field_validator("documents")
+        def validate_documents(cls, v):
+            """
+            Remove identifier from metadata
+            """
+            for _ in v:
+                if (
+                    isinstance(_, dict)
+                    and "metadata" in _
+                    and "identifier" in _["metadata"]
+                ):
+                    _.pop("identifier")
+            return v
 
     message: str = Field(
         default="Retrieval completed via BaseRetrieve", examples=["Retrieval completed"]

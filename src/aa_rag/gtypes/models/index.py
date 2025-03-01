@@ -1,11 +1,9 @@
-from typing import List
-
 from pydantic import BaseModel, Field, ConfigDict
 
 from aa_rag import setting
+from aa_rag.engine.simple_chunk import SimpleChunkIndexParams, SimpleChunkInitParams
 from aa_rag.gtypes.enums import EngineType
 from aa_rag.gtypes.models.base import BaseResponse
-from aa_rag.gtypes.models.engine import SimpleChunkEngineItem
 from aa_rag.gtypes.models.parse import ParserNeedItem
 
 
@@ -21,20 +19,20 @@ class IndexItem(BaseIndexItem):
     model_config = ConfigDict(extra="allow")
 
 
-class SimpleChunkIndexItem(SimpleChunkEngineItem, BaseIndexItem):
-    pass
-
-    model_config = ConfigDict(extra="forbid")
+class SimpleChunkIndexItem(
+    SimpleChunkInitParams, SimpleChunkIndexParams, BaseIndexItem
+):
+    source_data: None = Field(
+        None, exclude=True, validate_default=False, deprecated=True
+    )
 
 
 class IndexResponse(BaseResponse):
     class Data(BaseModel):
-        table_name: str | List[str] = Field(
-            ..., examples=["fairy_tale_chunk_text_embedding_model"]
-        )
+        pass
 
     message: str = Field(
-        default="Indexing completed via ChunkIndex",
-        examples=["Indexing completed via ChunkIndex"],
+        default="Indexing completed via SimpleChunkIndex",
+        examples=["Indexing completed via SimpleChunkIndex"],
     )
     data: Data = Field(default_factory=Data)
