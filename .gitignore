@@ -164,4 +164,5 @@ cython_debug/
 
 test/
 resources
-/db/
+/storage/
+config.ini
