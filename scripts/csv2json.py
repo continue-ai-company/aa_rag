@@ -15,34 +15,33 @@ import argparse
 # })
 
 
-
 def main():
     # 设置命令行参数
-    parser = argparse.ArgumentParser(description='Convert CSV to deployment JSON')
-    parser.add_argument('--input', required=True, help='Input CSV file path')
+    parser = argparse.ArgumentParser(description="Convert CSV to deployment JSON")
+    parser.add_argument("--input", required=True, help="Input CSV file path")
     args = parser.parse_args()
 
     # 读取CSV文件
     df = pd.read_csv(args.input)
-    df.fillna('', inplace=True)
+    df.fillna("", inplace=True)
 
     # 按url和name分组聚合
-    grouped = df.groupby(['url', 'name'])
+    grouped = df.groupby(["url", "name"])
 
     result = []
     for (url, name), group in grouped:
         # 提取部署配置（去重）
-        deployments = group[['os', 'arch', 'procedure']].drop_duplicates()
+        deployments = group[["os", "arch", "procedure"]].drop_duplicates()
 
         # 提取QA对（去重）
-        qas = group[['question', 'answer']].drop_duplicates()
+        qas = group[["question", "answer"]].drop_duplicates()
 
         # 构建条目
         entry = {
             "url": url,
             "name": name,
-            "deployment": deployments.to_dict('records'),
-            "qa": qas.to_dict('records')
+            "deployment": deployments.to_dict("records"),
+            "qa": qas.to_dict("records"),
         }
         result.append(entry)
 
@@ -50,8 +49,9 @@ def main():
     json_output = json.dumps(result, indent=2, ensure_ascii=False)
 
     # 保存到文件
-    with open('deployments.json', 'w') as f:
+    with open("deployments.json", "w") as f:
         f.write(json_output)
+
 
 if __name__ == "__main__":
     main()
