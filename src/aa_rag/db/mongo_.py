@@ -12,8 +12,8 @@ class MongoDBDataBase(BaseNoSQLDataBase):
 
     def __init__(
         self,
-        uri: str = setting.db.mongodb.uri,
-        db_name: str = setting.db.mongodb.database,
+        uri: str = setting.storage.mongodb.uri,
+        db_name: str = setting.storage.mongodb.db_name,
         **kwargs,
     ):
         """

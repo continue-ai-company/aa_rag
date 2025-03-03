@@ -106,3 +106,11 @@ class BaseNoSQLDataBase(BaseDataBase, ABC):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    @abstractmethod
+    def create_table(self, table_name, **kwargs):
+        return NotImplemented
+
+    @abstractmethod
+    def select(self, query: dict = None):
+        return NotImplemented

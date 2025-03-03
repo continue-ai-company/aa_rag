@@ -1,6 +1,8 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, computed_field, model_validator
+from pydantic_core.core_schema import model_field
 
 from aa_rag import setting
+from aa_rag.engine.lightrag import LightRAGInitParams, LightRAGIndexParams
 from aa_rag.engine.simple_chunk import SimpleChunkIndexParams, SimpleChunkInitParams
 from aa_rag.gtypes.enums import EngineType
 from aa_rag.gtypes.models.base import BaseResponse
@@ -22,6 +24,12 @@ class IndexItem(BaseIndexItem):
 class SimpleChunkIndexItem(
     SimpleChunkInitParams, SimpleChunkIndexParams, BaseIndexItem
 ):
+    source_data: None = Field(
+        None, exclude=True, validate_default=False, deprecated=True
+    )
+
+
+class LightRAGIndexItem(LightRAGInitParams, LightRAGIndexParams, BaseIndexItem):
     source_data: None = Field(
         None, exclude=True, validate_default=False, deprecated=True
     )

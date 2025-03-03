@@ -1,5 +1,11 @@
 from fastapi import APIRouter, HTTPException
 
+from aa_rag import utils
+from aa_rag.engine.lightrag import (
+    LightRAGEngine,
+    LightRAGInitParams,
+    LightRAGIndexParams,
+)
 from aa_rag.engine.simple_chunk import (
     SimpleChunk,
     SimpleChunkInitParams,
@@ -10,9 +16,9 @@ from aa_rag.gtypes.models.index import (
     IndexItem,
     SimpleChunkIndexItem,
     IndexResponse,
+    LightRAGIndexItem,
 )
 from aa_rag.gtypes.models.parse import ParserNeedItem
-from aa_rag.parse.markitdown import MarkitDownParser
 
 router = APIRouter(
     prefix="/index", tags=["Index"], responses={404: {"description": "Not found"}}
@@ -31,15 +37,9 @@ async def root(item: IndexItem):
 
 @router.post("/chunk", tags=["SimpleChunk"])
 async def chunk_index(item: SimpleChunkIndexItem) -> IndexResponse:
-    # parse content
-
-    parser = MarkitDownParser()
-    source_data = await parser.aparse(
-        **ParserNeedItem(**item.model_dump()).model_dump()
-    )
+    source_data = await utils.parse_content(params=ParserNeedItem(**item.model_dump()))
 
     # index content
-
     engine = SimpleChunk(params=SimpleChunkInitParams(**item.model_dump()))
 
     engine.index(
@@ -55,5 +55,30 @@ async def chunk_index(item: SimpleChunkIndexItem) -> IndexResponse:
         code=200,
         status="success",
         message="Indexing completed via SimpleChunkIndex",
+        data=IndexResponse.Data(),
+    )
+
+
+@router.post("/lightrag", tags=["LightRAG"])
+async def lightrag_index(item: LightRAGIndexItem) -> IndexResponse:
+    # parse content
+    source_data = await utils.parse_content(params=ParserNeedItem(**item.model_dump()))
+
+    # index content
+    engine = LightRAGEngine(params=LightRAGInitParams(**item.model_dump()))
+
+    await engine.index(
+        params=LightRAGIndexParams(
+            **{
+                **item.model_dump(),
+                "source_data": source_data,
+            }
+        )
+    )
+
+    return IndexResponse(
+        code=200,
+        status="success",
+        message="Indexing completed via LightRAGIndex",
         data=IndexResponse.Data(),
     )

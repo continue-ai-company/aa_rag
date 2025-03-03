@@ -30,13 +30,8 @@ class SimpleChunkIndexParams(BaseModel):
     source_data: Union[Document, List[Document]] = Field(
         ..., description="The source data to index."
     )
-    chunk_size: int = Field(
-        dfs_setting.index.chunk_size, description="The size of each chunk."
-    )
-    chunk_overlap: int = Field(
-        dfs_setting.index.overlap_size, description="The overlap between chunks."
-    )
-    mode: DBMode = Field(
+
+    retrieve_mode: DBMode = Field(
         default=setting.storage.mode, description="The mode of the index operation."
     )
 
@@ -46,7 +41,7 @@ class SimpleChunkRetrieveParams(BaseModel):
     top_k: int = Field(
         dfs_setting.retrieve.k, description="The number of top results to return."
     )
-    retrieve_type: RetrieveType = Field(
+    retrieve_mode: RetrieveType = Field(
         default=dfs_setting.retrieve.type, description="The retrieval method."
     )
     dense_weight: float = Field(
@@ -118,7 +113,7 @@ class SimpleChunk(
         """
         assert self.table_exist, f"Table {self.table_name} does not exist."
 
-        query, top_k, retrieve_type = params.query, params.top_k, params.retrieve_type
+        query, top_k, retrieve_type = params.query, params.top_k, params.retrieve_mode
 
         match retrieve_type:
             case RetrieveType.DENSE:
@@ -386,21 +381,24 @@ class SimpleChunk(
             query, expr=f'json_contains(identifier, "{self.identifier}")'
         )[:top_k]
 
-    def index(self, params: SimpleChunkIndexParams):
+    def index(
+        self,
+        params: SimpleChunkIndexParams,
+        chunk_size: int = dfs_setting.index.chunk_size,
+        chunk_overlap: int = dfs_setting.index.overlap_size,
+    ):
         """
         Build index from source data and store to database.
 
         Args:
             params (SimpleChunkIndexParams): The index parameters.
+            chunk_size (int, optional): The size of each chunk. Defaults to setting.index.chunk_size.
+            chunk_overlap (int, optional): The overlap size between chunks. Defaults to setting.index.overlap_size.
         """
         if not self.table_exist:
             self._create_table()
 
-        source_data, chunk_size, chunk_overlap = (
-            params.source_data,
-            params.chunk_size,
-            params.chunk_overlap,
-        )
+        source_data, mode = params.source_data, params.retrieve_mode
 
         if isinstance(source_data, Document):
             source_docs = [source_data]
@@ -445,7 +443,7 @@ class SimpleChunk(
         )
 
         with vector_db.using(table_name) as table:
-            match params.mode:
+            match mode:
                 case DBMode.INSERT:
                     table.add(data)
 
@@ -455,7 +453,7 @@ class SimpleChunk(
                 case DBMode.OVERWRITE:
                     table.overwrite(data)
                 case _:
-                    raise ValueError(f"Invalid mode: {params.mode}")
+                    raise ValueError(f"Invalid mode: {mode}")
 
     def generate(self, params: SimpleChunkGenerateParams):
         return NotImplemented

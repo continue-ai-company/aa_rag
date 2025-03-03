@@ -43,7 +43,8 @@ class NoSQLDBType(Enum):
 
 
 class EngineType(Enum):
-    SIMPLE_CHUNK: str = "chunk"
+    SimpleChunk: str = "chunk"
+    LightRAG: str = "lightrag"
 
     def __str__(self):
         return f"{self.value}"
@@ -51,6 +52,21 @@ class EngineType(Enum):
 
 class ParsingType(Enum):
     MARKITDOWN: str = "markitdown"
+
+    def __str__(self):
+        return f"{self.value}"
+
+
+class LightRAGVectorStorageType(Enum):
+    MILVUS: str = "MilvusVectorDBStorage"
+
+    def __str__(self):
+        return f"{self.value}"
+
+
+class LightRAGGraphStorageType(Enum):
+    NEO4J: str = "Neo4JStorage"
+    NETWORKX: str = "NetworkXStorage"
 
     def __str__(self):
         return f"{self.value}"

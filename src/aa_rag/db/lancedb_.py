@@ -5,7 +5,7 @@ from aa_rag.db.base import BaseVectorDataBase
 
 
 class LanceDBDataBase(BaseVectorDataBase):
-    def __init__(self, uri: str = setting.db.lancedb.uri, **kwargs):
+    def __init__(self, uri: str = setting.storage.lancedb.uri, **kwargs):
         self.uri = uri
         self._conn_obj = self.connect()
         super().__init__(**kwargs)

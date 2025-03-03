@@ -5,6 +5,7 @@ from typing import Optional
 from pydantic import BaseModel, Field, HttpUrl, model_validator
 
 from aa_rag import setting
+from aa_rag.gtypes.enums import ParsingType
 
 
 class OSSResourceInfo(BaseModel):
@@ -60,6 +61,10 @@ class ParserNeedItem(BaseModel):
         default=True,
         examples=[True],
         description="Whether updated to cache when parsing a new file or do not use cache file",
+    )
+
+    parsing_type: ParsingType = Field(
+        default=ParsingType.MARKITDOWN, description="The parsing type of the content."
     )
 
     # Custom validator to ensure file_path and content are not both None

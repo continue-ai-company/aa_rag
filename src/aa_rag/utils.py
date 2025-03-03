@@ -1,15 +1,14 @@
 import hashlib
-import logging
+import re
 import uuid
-from pathlib import Path
-from typing import Any
+from io import StringIO
+from typing import List
 
+import pandas as pd
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_core.language_models import BaseChatModel
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from markitdown import MarkItDown
-from openai import OpenAI
 
 from aa_rag import setting
 from aa_rag.db import LanceDBDataBase
@@ -17,7 +16,9 @@ from aa_rag.db.base import BaseVectorDataBase, BaseNoSQLDataBase
 from aa_rag.db.milvus_ import MilvusDataBase
 from aa_rag.db.mongo_ import MongoDBDataBase
 from aa_rag.db.tinydb_ import TinyDBDataBase
-from aa_rag.gtypes.enums import VectorDBType, NoSQLDBType
+from aa_rag.gtypes.enums import VectorDBType, NoSQLDBType, ParsingType
+from aa_rag.gtypes.models.parse import ParserNeedItem
+from aa_rag.parse.markitdown import MarkitDownParser
 
 
 def calculate_md5(input_string: str) -> str:
@@ -110,3 +111,67 @@ def get_db(
 
 def get_uuid():
     return str(uuid.uuid4()).replace("-", "")
+
+
+async def parse_content(params: ParserNeedItem) -> List[Document]:
+    if params.parsing_type == ParsingType.MARKITDOWN:
+        parser = MarkitDownParser()
+        source_data = await parser.aparse(
+            **ParserNeedItem(**params.model_dump(exclude={"parsing_type"})).model_dump()
+        )
+    else:
+        raise ValueError(f"Invalid parsing type: {params.parsing_type}")
+
+    return source_data
+
+
+def markdown_extract_csv_df(markdown_content):
+    """将 Markdown 中的 CSV 内容转换为多个 DataFrame"""
+
+    def extract_csv_sections(markdown_content):
+        """从固定格式的 Markdown 中提取三个 CSV 部分"""
+        # 定义正则表达式模式（注意 re.DOTALL 允许跨行匹配）
+        pattern = re.compile(
+            r"-----Entities-----\s*```csv\s*(.*?)\s*```"
+            r".*?"
+            r"-----Relationships-----\s*```csv\s*(.*?)\s*```"
+            r".*?"
+            r"-----Sources-----\s*```csv\s*(.*?)\s*```",
+            re.DOTALL,
+        )
+
+        # 匹配并提取内容
+        match = pattern.search(markdown_content)
+
+        # 返回包含三个 CSV 内容的字典
+        return (
+            {
+                "entities": match.group(1).strip() if match else "",
+                "relationships": match.group(2).strip() if match else "",
+                "sources": match.group(3).strip() if match else "",
+            }
+            if match
+            else {}
+        )
+
+    # 提取原始 CSV 字符串
+    raw_sections = extract_csv_sections(markdown_content)
+
+    # 结果容器
+    dfs = {}
+
+    raw_sections.pop("sources")  # 移除 sources 部分
+
+    # 处理每个 CSV 部分
+    for section_name, csv_content in raw_sections.items():
+        csv_content = csv_content.replace("\t", "")
+        # 处理包含多行文本的特殊字段
+        dfs[section_name] = pd.read_csv(
+            StringIO(csv_content),
+            escapechar="\\",  # 处理转义字符
+            quotechar='"',  # 识别带逗号的字段
+            skipinitialspace=True,
+            on_bad_lines="warn",
+        )
+
+    return dfs["entities"], dfs["relationships"]

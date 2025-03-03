@@ -1,7 +1,7 @@
 import ast
 import importlib
 from pathlib import Path
-from typing import Optional, Any
+from typing import Optional, Any, Literal
 
 from dotenv.main import DotEnv
 from pydantic import BaseModel, Field, SecretStr, field_validator
@@ -13,6 +13,8 @@ from aa_rag.gtypes.enums import (
     VectorDBType,
     NoSQLDBType,
     EngineType,
+    LightRAGVectorStorageType,
+    LightRAGGraphStorageType,
 )
 
 
@@ -60,6 +62,10 @@ class Server(BaseModel):
     port: int = Field(
         default=222, description="The port number on which the server listens."
     )
+    environment: Literal["Development", "Production"] = Field(
+        default=load_env("ENVIRONMENT", ("Development", "Production")),
+        description="The environment in which the server is running.",
+    )
 
 
 class OpenAI(BaseModel):
@@ -81,16 +87,17 @@ class OpenAI(BaseModel):
         return v
 
 
-class DB(BaseModel):
+class Storage(BaseModel):
     class LanceDB(BaseModel):
         uri: str = Field(
-            default="./db/lancedb", description="URI for lanceDB database location."
+            default="./storage/lancedb",
+            description="URI for lanceDB database location.",
         )
 
     class Milvus(BaseModel):
         uri: str = Field(
             default=load_env(
-                "DB_MILVUS_URI", ("./db/milvus.db", "http://localhost:19530")
+                "STORAGE_MILVUS_URI", ("./storage/milvus.db", "http://localhost:19530")
             ),
             description="URI for the Milvus server location.",
         )
@@ -100,13 +107,13 @@ class DB(BaseModel):
             description="Password for the Milvus server.",
             validate_default=True,
         )
-        database: str = Field(
+        db_name: str = Field(
             default="aarag", description="Database name for the Milvus server."
         )
 
     class TinyDB(BaseModel):
         uri: str = Field(
-            default="./db/db.json",
+            default="./storage/tinydb.json",
             description="URI for the relational database location.",
         )
 
@@ -121,9 +128,28 @@ class DB(BaseModel):
             description="Password for the MongoDB server.",
             validate_default=True,
         )
-        database: str = Field(
+        db_name: str = Field(
             default="aarag", description="Database name for the MongoDB server."
         )
+
+    class Neo4j(BaseModel):
+        uri: str = Field(
+            default=load_env("STORAGE_NEO4J_URI", (None, "bolt://localhost:7687")),
+            description="URI for the Neo4j server location.",
+        )
+        user: str = Field(default=None, description="Username for the Neo4j server.")
+        password: SecretStr = Field(
+            default=None, description="Password for the Neo4j server."
+        )
+
+        @field_validator("uri")
+        def check(cls, v):
+            if v:
+                if importlib.util.find_spec("neo4j") is None:
+                    raise ImportError(
+                        "Neo4j can only be enabled on the online service, please execute `pip install aa-rag[online]`."
+                    )
+            return v
 
     lancedb: LanceDB = Field(
         default_factory=LanceDB, description="LanceDB database configuration settings."
@@ -136,6 +162,10 @@ class DB(BaseModel):
     )
     mongodb: MongoDB = Field(
         default_factory=MongoDB, description="MongoDB database configuration settings."
+    )
+
+    neo4j: Neo4j = Field(
+        default_factory=Neo4j, description="Neo4j configuration settings."
     )
 
     mode: DBMode = Field(
@@ -192,10 +222,12 @@ class Engine(BaseModel):
     class SimpleChunk(BaseModel):
         class Index(BaseModel):
             chunk_size: int = Field(
-                default=512, description="Size of each chunk in the index."
+                default=load_env("ENGINE_SIMPLECHUNK_INDEX_CHUNK_SIZE", 1000),
+                description="Size of each chunk in the index.",
             )
             overlap_size: int = Field(
-                default=100, description="Overlap size between chunks in the index."
+                default=load_env("ENGINE_SIMPLECHUNK_INDEX_OVERLAP_SIZE", 100),
+                description="Overlap size between chunks in the index.",
             )
 
         class Retrieve(BaseModel):
@@ -224,14 +256,61 @@ class Engine(BaseModel):
             default_factory=Retrieve, description="Retrieve configuration settings."
         )
 
+    class LightRAG(BaseModel):
+        dir: str = Field(
+            default="./storage/lightrag",
+            description="Directory for LightRAG database location.",
+        )
+        vector_storage: LightRAGVectorStorageType = Field(
+            default=LightRAGVectorStorageType.MILVUS,
+            description="Type of vector storage used for LightRAG.",
+        )
+        graph_storage: LightRAGGraphStorageType = Field(
+            default=load_env(
+                "LIGHTRAG_GRAPH_STORAGE",
+                (LightRAGGraphStorageType.NETWORKX, LightRAGGraphStorageType.NEO4J),
+            ),
+            description="Type of graph storage used for LightRAG.",
+        )
+        llm: str = Field(
+            default="gpt-4o-mini", description="Model used for understanding text."
+        )
+        embedding: str = Field(
+            default_factory=Embedding,
+            description="Model used for generating text embeddings.",
+        )
+        cosine_threshold: float = Field(
+            default=load_env("LIGHTRAG_COSINE_THRESHOLD", 0.3),
+            description="Cosine similarity threshold for LightRAG.",
+        )
+
+        k: int = Field(
+            default=60,
+            description="Number of top items to retrieve. Represents entities in 'local' mode and relationships in 'global' mode.",
+        )
+
+        @field_validator("graph_storage")
+        def check(cls, v):
+            if v == LightRAGGraphStorageType.NEO4J:
+                if importlib.util.find_spec("neo4j") is None:
+                    raise ImportError(
+                        "Neo4j can only be enabled on the online service, please execute `pip install aa-rag[online]`."
+                    )
+            return v
+
     type: EngineType = Field(
-        default=EngineType.SIMPLE_CHUNK,
+        default=EngineType.SimpleChunk,
         description="Type of index used for data retrieval.",
     )
 
     simple_chunk: SimpleChunk = Field(
         default_factory=SimpleChunk,
         description="Simple chunk index configuration settings.",
+    )
+
+    lightrag: LightRAG = Field(
+        default_factory=LightRAG,
+        description="LightRAG index configuration settings.",
     )
 
 
@@ -295,7 +374,9 @@ class Settings(BaseSettings):
         default_factory=OpenAI, description="OpenAI API configuration settings."
     )
 
-    db: DB = Field(default_factory=DB, description="Database configuration settings.")
+    storage: Storage = Field(
+        default_factory=Storage, description="Database configuration settings."
+    )
     embedding: Embedding = Field(
         default_factory=Embedding, description="Embedding model configuration settings."
     )
@@ -308,6 +389,7 @@ class Settings(BaseSettings):
     )
 
     oss: OSS = Field(default_factory=OSS, description="Minio configuration settings.")
+
     # 这里禁用了自动的 CLI 解析
     model_config = SettingsConfigDict(
         env_file=".env",

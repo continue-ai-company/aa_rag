@@ -1,5 +1,10 @@
 from fastapi import APIRouter, HTTPException
 
+from aa_rag.engine.lightrag import (
+    LightRAGEngine,
+    LightRAGInitParams,
+    LightRAGRetrieveParams,
+)
 from aa_rag.engine.simple_chunk import (
     SimpleChunk,
     SimpleChunkRetrieveParams,
@@ -10,6 +15,7 @@ from aa_rag.gtypes.models.retrieve import (
     RetrieveItem,
     RetrieveResponse,
     SimpleChunkRetrieveItem,
+    LightRAGRetrieveItem,
 )
 
 router = APIRouter(
@@ -36,6 +42,20 @@ async def chunk_retrieve(item: SimpleChunkRetrieveItem) -> RetrieveResponse:
     return RetrieveResponse(
         code=200,
         status="success",
-        message="Retrieval completed via HybridRetrieve",
+        message=f"Retrieval completed via HybridRetrieve in {item.retrieve_mode}",
+        data=RetrieveResponse.Data(documents=result),
+    )
+
+
+@router.post("/lightrag", tags=["LightRAG"])
+async def lightrag_retrieve(item: LightRAGRetrieveItem) -> RetrieveResponse:
+    engine = LightRAGEngine(LightRAGInitParams(**item.model_dump()))
+
+    result = await engine.retrieve(LightRAGRetrieveParams(**item.model_dump()))
+
+    return RetrieveResponse(
+        code=200,
+        status="success",
+        message=f"Retrieval completed via LightRAGRetrieve in {item.retrieve_mode}",
         data=RetrieveResponse.Data(documents=result),
     )

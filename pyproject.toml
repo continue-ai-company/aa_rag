@@ -36,7 +36,22 @@ aarag = "aa_rag.main:startup"
 online = [
     "boto3>=1.36.25",
     "lancedb>=0.19.0",
+    "neo4j>=5.28.1",
     "pymongo>=4.11.1",
+    "future>=1.0.0",
+    "graspologic>=3.4.1",
+    "lightrag-hku>=1.2.2",
+    "nano-vectordb>=0.0.4.3",
+    "networkx>=3.4.2",
+    "pipmaster>=0.4.0",
+]
+lightrag = [
+    "future>=1.0.0",
+    "graspologic>=3.4.1",
+    "lightrag-hku>=1.2.2",
+    "nano-vectordb>=0.0.4.3",
+    "networkx>=3.4.2",
+    "pipmaster>=0.4.0",
 ]
 
 [dependency-groups]

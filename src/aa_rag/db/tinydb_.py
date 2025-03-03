@@ -13,7 +13,7 @@ class TinyDBDataBase(BaseNoSQLDataBase):
     table: Table | None = None
     _db_type = NoSQLDBType.TINYDB
 
-    def __init__(self, uri: str = setting.db.tinydb.uri, **kwargs):
+    def __init__(self, uri: str = setting.storage.tinydb.uri, **kwargs):
         self.uri = uri
         # create parent directory if not exist
         Path(self.uri).parent.mkdir(parents=True, exist_ok=True)
