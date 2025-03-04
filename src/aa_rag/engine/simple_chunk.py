@@ -11,8 +11,10 @@ from pydantic import BaseModel, Field
 
 from aa_rag import setting, utils
 from aa_rag.db.base import BaseDataBase, BaseVectorDataBase
+from aa_rag.db.multimodal import StoreImageParams
 from aa_rag.engine.base import BaseEngine
 from aa_rag.gtypes.enums import EngineType, VectorDBType, DBMode, RetrieveType
+from aa_rag.oss import OSSStore, OSSStoreInitParams
 
 dfs_setting = setting.engine.simple_chunk
 
@@ -26,7 +28,7 @@ class SimpleChunkInitParams(BaseModel):
 
 
 # SimpleChunk 参数模型
-class SimpleChunkIndexParams(BaseModel):
+class SimpleChunkIndexParams(StoreImageParams):
     source_data: Union[Document, List[Document]] = Field(
         ..., description="The source data to index."
     )
@@ -411,6 +413,15 @@ class SimpleChunk(
         )
 
         indexed_data = splitter.split_documents(source_docs)
+
+        # handle image
+        img_params: StoreImageParams = StoreImageParams(**params.model_dump())
+        if img_params.image and img_params.img_desc:
+            oss_store_params = OSSStoreInitParams(**img_params.model_dump())
+            img_doc: Document = OSSStore(params=oss_store_params).store_image(
+                img_params
+            )
+            indexed_data.append(img_doc)  # add image description to indexed_data
 
         # store index
 

@@ -1,5 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict, computed_field, model_validator
-from pydantic_core.core_schema import model_field
+from pydantic import BaseModel, Field, ConfigDict
 
 from aa_rag import setting
 from aa_rag.engine.lightrag import LightRAGInitParams, LightRAGIndexParams
@@ -9,7 +8,7 @@ from aa_rag.gtypes.models.base import BaseResponse
 from aa_rag.gtypes.models.parse import ParserNeedItem
 
 
-class BaseIndexItem(ParserNeedItem, BaseModel):
+class BaseIndexItem(ParserNeedItem):
     pass
 
 

@@ -8,7 +8,7 @@ from openai import OpenAI
 
 from aa_rag import setting
 from aa_rag.gtypes.enums import ParsingType
-from aa_rag.gtypes.models.parse import OSSResourceInfo
+from aa_rag.oss import OSSResourceInfo
 from aa_rag.parse.base import BaseParser
 
 
