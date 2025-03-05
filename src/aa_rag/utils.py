@@ -179,12 +179,15 @@ def markdown_extract_csv_df(markdown_content):
     return dfs["entities"], dfs["relationships"]
 
 
-def convert_img_base64_to_file_info(base64_str: str) -> Tuple[str, str, bytes]:
+def convert_img_base64_to_file_info(
+    base64_str: str, extra_calculate_value: str = None
+) -> Tuple[str, str, bytes]:
     """
     将 Base64 字符串保存为图片文件名，文件名使用 Base64 数据的 MD5 哈希值
 
     Args:
         base64_str: 包含 Data URI 前缀（如 "data:image/png;base64,..."）或纯 Base64 的字符串
+        extra_calculate_value: 额外的计算值用于计算MD5值
 
     Returns:
         返回文件名,文件类型，二进制的文件内容
@@ -209,7 +212,12 @@ def convert_img_base64_to_file_info(base64_str: str) -> Tuple[str, str, bytes]:
     binary_data = base64.b64decode(data)
 
     # 计算二进制数据的 MD5 哈希值
-    md5_hash = hashlib.md5(binary_data).hexdigest()
+    value = (
+        binary_data
+        if extra_calculate_value is None
+        else binary_data + extra_calculate_value.encode("utf-8")
+    )
+    md5_hash = hashlib.md5(value).hexdigest()
 
     # 确定文件扩展名
     if mime_type:

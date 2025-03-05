@@ -261,7 +261,7 @@ class OSSStore:
 
     def store_image(self, params: StoreImageParams) -> Document:
         img_file_name, content_type, binary_data = (
-            utils.convert_img_base64_to_file_info(params.image)
+            utils.convert_img_base64_to_file_info(params.image, params.img_desc)
         )
         img_file_path = f"image/{img_file_name}"
 
