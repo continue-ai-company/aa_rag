@@ -44,7 +44,9 @@ class OSSResourceInfo(BaseModel):
 
         if not self.source_file_path.startswith(setting.oss.bucket):
             self.source_file_path = f"{setting.oss.bucket}/{self.source_file_path}"
-        if self.cache_file_path is not None and not self.cache_file_path.startswith(setting.oss.cache_bucket):
+        if self.cache_file_path is not None and not self.cache_file_path.startswith(
+            setting.oss.cache_bucket
+        ):
             self.cache_file_path = f"{setting.oss.cache_bucket}/{self.cache_file_path}"
 
         return self

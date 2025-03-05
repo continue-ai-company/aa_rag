@@ -180,7 +180,7 @@ class BaseParser(OSSStore):
                                                 self.oss_cache_bucket
                                             )
                                             else curr_uri.cache_file_path,
-                                            Body=result[-1].page_content,
+                                            Body=url_content.decode("utf8"),
                                         )
 
                                 return self._parse_file(
