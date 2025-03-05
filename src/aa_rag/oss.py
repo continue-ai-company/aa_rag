@@ -39,7 +39,7 @@ class OSSResourceInfo(BaseModel):
                 "The cache_file_path must be provided when hit_cache is True."
             )
 
-        if self.suffix is None:
+        if self.suffix is None and self.url is not None:
             self.suffix = Path(self.url.path).suffix
 
         if not self.source_file_path.startswith(setting.oss.bucket):
