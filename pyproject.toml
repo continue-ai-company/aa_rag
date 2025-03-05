@@ -1,6 +1,6 @@
 [project]
 name = "aa-rag"
-version = "0.3.1.1"
+version = "0.3.1.2"
 description = "RAG server for ai2apps."
 readme = "README.md"
 authors = [
