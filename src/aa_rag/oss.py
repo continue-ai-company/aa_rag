@@ -52,17 +52,18 @@ class OSSResourceInfo(BaseModel):
 
 class OSSStore:
     from aa_rag.db.multimodal import StoreImageParams
+
     _oss_available: bool
     _oss_cache_available: bool
 
     def __init__(
-            self,
-            params: OSSStoreInitParams,
-            oss_endpoint: str = setting.oss.endpoint,
-            oss_bucket: str = setting.oss.bucket,
-            oss_cache_bucket: str = setting.oss.cache_bucket,
-            oss_access_key: str = setting.oss.access_key,
-            oss_secret_key: str = setting.oss.secret_key.get_secret_value(),
+        self,
+        params: OSSStoreInitParams,
+        oss_endpoint: str = setting.oss.endpoint,
+        oss_bucket: str = setting.oss.bucket,
+        oss_cache_bucket: str = setting.oss.cache_bucket,
+        oss_access_key: str = setting.oss.access_key,
+        oss_secret_key: str = setting.oss.secret_key.get_secret_value(),
     ):
         """
         Initialize the BaseParser with OSS settings and cache options.
@@ -119,11 +120,11 @@ class OSSStore:
 
     @staticmethod
     def _validate_oss(
-            oss_endpoint: str,
-            oss_bucket: str,
-            oss_cache_bucket: str,
-            oss_access_key: str,
-            oss_secret_key: str,
+        oss_endpoint: str,
+        oss_bucket: str,
+        oss_cache_bucket: str,
+        oss_access_key: str,
+        oss_secret_key: str,
     ) -> Tuple[bool, bool]:
         """
         Validate the OSS (Object Storage Service) connection and buckets.
@@ -176,7 +177,7 @@ class OSSStore:
             return True, False
 
     def check_file_path(
-            self, file_path: PathLike, **kwargs
+        self, file_path: PathLike, **kwargs
     ) -> PathLike | OSSResourceInfo:
         """
         Check the file path and return the appropriate resource info.

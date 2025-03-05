@@ -1,10 +1,10 @@
+from abc import abstractmethod
 from typing import Any, List
 
 from aa_rag import setting, utils
 
 
 class BaseKnowledge:
-    _knowledge_name: str
     dimensions: int
 
     def __init__(
@@ -19,8 +19,9 @@ class BaseKnowledge:
         )
 
     @property
+    @abstractmethod
     def knowledge_name(self):
-        return self._knowledge_name
+        return NotImplemented
 
     def index(self, **kwargs):
         return NotImplemented
