@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field, SecretStr
 
 from aa_rag import setting, utils
 from aa_rag.db.base import BaseNoSQLDataBase
-from aa_rag.engine.base import BaseEngine
+from aa_rag.engine.base import BaseEngine, BaseIndexParams
 from aa_rag.gtypes.enums import EngineType
 
 dfs_setting = setting.engine.lightrag
@@ -24,7 +24,7 @@ class LightRAGInitParams(BaseModel):
     llm: str = Field(default=dfs_setting.llm, description="The language model to use.")
 
 
-class LightRAGIndexParams(BaseModel):
+class LightRAGIndexParams(BaseIndexParams):
     source_data: Union[Document, List[Document]] = Field(
         ..., description="The source data to index."
     )

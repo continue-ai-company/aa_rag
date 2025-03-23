@@ -8,11 +8,12 @@ from langchain_core.retrievers import BaseRetriever
 from langchain_milvus import Milvus
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pydantic import BaseModel, Field
+from sqlalchemy.testing.suite.test_reflection import metadata
 
 from aa_rag import setting, utils
 from aa_rag.db.base import BaseDataBase, BaseVectorDataBase
 from aa_rag.db.multimodal import StoreImageParams
-from aa_rag.engine.base import BaseEngine
+from aa_rag.engine.base import BaseEngine, BaseIndexParams
 from aa_rag.gtypes.enums import EngineType, VectorDBType, DBMode, RetrieveType
 from aa_rag.oss import OSSStore, OSSStoreInitParams
 
@@ -28,7 +29,7 @@ class SimpleChunkInitParams(BaseModel):
 
 
 # SimpleChunk 参数模型
-class SimpleChunkIndexParams(StoreImageParams):
+class SimpleChunkIndexParams(BaseIndexParams, StoreImageParams):
     source_data: Union[Document, List[Document]] = Field(
         ..., description="The source data to index."
     )
@@ -439,6 +440,7 @@ class SimpleChunk(
         data = []
 
         for id_, vector, doc in zip(id_s, text_vector_s, indexed_data):
+            doc.metadata.update(params.metadata)  # update metadata with params.metadata
             data.append(
                 {
                     "id": id_,
