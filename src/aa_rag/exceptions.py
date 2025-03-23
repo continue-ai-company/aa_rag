@@ -23,3 +23,24 @@ async def handle_exception_error(request, exc):
             data=str(exc),
         ).model_dump(),
     )
+
+
+async def handel_FileNotFoundError(request, exc):
+    """
+    Handle FileNotFoundError
+    Args:
+        request:
+        exc:
+
+    Returns:
+
+    """
+    return JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND,
+        content=BaseResponse(
+            code=status.HTTP_404_NOT_FOUND,
+            status="failed",
+            message=f"{type(exc).__name__} Error",
+            data=str(exc),
+        ).model_dump(),
+    )
