@@ -69,7 +69,7 @@ class Server(BaseModel):
 
 
 class OpenAI(BaseModel):
-    api_key: SecretStr = Field(
+    api_key: Optional[SecretStr] = Field(
         default=load_env("OPENAI_API_KEY"),
         alias="OPENAI_API_KEY",
         description="API key for accessing OpenAI services.",
@@ -83,6 +83,7 @@ class OpenAI(BaseModel):
 
     @model_validator(mode="after")
     def check_api_key(self):
+        assert self.api_key, "API key is required."
         assert self.api_key.get_secret_value(), "API key is required."
         return self
 
