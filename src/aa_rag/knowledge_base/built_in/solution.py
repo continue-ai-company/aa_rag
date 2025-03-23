@@ -1,4 +1,4 @@
-import json
+import ast
 from typing import Dict, Any, List
 
 from langchain_core.output_parsers import StrOutputParser
@@ -45,18 +45,38 @@ class SolutionKnowledge(BaseKnowledge):
             [
                 (
                     "system",
-                    """You are an expert in computer hardware device information. 
-                    I will provide you with two jsons. Each json is the detailed data of a computer hardware device information.
+                    """You are an expert in computer hardware device information. I will provide you with two jsons. Each json is the detailed data of a computer hardware device information. Please determine whether the two devices are compatible.
                     --Requirements--
-                    1. Please determine whether the two devices are compatible. If compatible, please return "True". Otherwise, return "False".
-                    2. Do not return other information. Just return "True" or "False".
-
-                    --Data--
+                    1. Please determine whether the two device environments are compatible when i install a software in each devices. If compatible, please return "True". Otherwise, return "False".
+                    2. Different operating system platform are not compatible.
+                    3. Different CPU architecture are not compatible.
+                    4. Please compare the platform and architecture of the two devices and strictly judge according to my requirements.
+                    5. Do not return other information. Just return "True" or "False" according to the requirements.
+                    
+                    
+                    --Example 1--
+                    -Input-
+                    source_env_info: {{"platform": "windows","arch": "x64"}}
+                    target_env_info: {{"platform": "darwin","arch": "arm64"}}
+                    
+                    -Output- 
+                    False
+                    
+                    --Example 2--
+                    -Input-
+                    source_env_info: {{"platform": "darwin","arch": "m2"}}
+                    target_env_info: {{"platform": "darwin","arch": "m3"}}
+                    
+                    -Output-
+                    True
+                    
+                    
+                    --Real Data--
+                    -Input-
                     source_env_info: {source_env_info}
                     target_env_info: {target_env_info}
-
-                    --Result--
-                    result:
+                    
+                    -Output-
                     """,
                 )
             ]
@@ -65,12 +85,13 @@ class SolutionKnowledge(BaseKnowledge):
         chain = prompt_template | self.llm | StrOutputParser()
         result = chain.invoke(
             {
-                "source_env_info": json.dumps(source_env_info.model_dump()),
-                "target_env_info": json.dumps(target_env_info.model_dump()),
+                "source_env_info": source_env_info.model_dump(),
+                "target_env_info": target_env_info.model_dump(),
             }
         )
         try:
-            result = bool(result)
+            # result=bool(result)
+            result = ast.literal_eval(result)
         except Exception:
             result = False
         return result
