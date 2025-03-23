@@ -1,4 +1,3 @@
-import importlib
 import logging
 from os import PathLike
 from pathlib import Path
@@ -79,6 +78,7 @@ class OSSStore:
             oss_access_key (str): The access key for the OSS service.
             oss_secret_key (str): The secret key for the OSS service.
         """
+
         self._oss_available, self._oss_cache_available = self._validate_oss(
             oss_endpoint, oss_bucket, oss_cache_bucket, oss_access_key, oss_secret_key
         )
@@ -149,11 +149,10 @@ class OSSStore:
             return False, False
 
         # Create S3 client
+        from botocore.exceptions import BotoCoreError
+
         try:
-            if importlib.util.find_spec("botocore"):
-                from botocore.exceptions import BotoCoreError, ClientError
-            else:
-                raise ImportError("botocore not found")
+            import boto3
 
             oss_client = boto3.client(
                 "s3",
@@ -168,6 +167,8 @@ class OSSStore:
                 f"Failed to connect to OSS service: {str(e)}. No longer use OSS."
             )
             return False, False
+
+        from botocore.exceptions import ClientError
 
         try:
             # Validate main bucket
@@ -202,10 +203,12 @@ class OSSStore:
         """
         # find file path from local first
         if Path(file_path).exists():
-            return file_path
+            return Path(file_path)
 
         if self.oss_available:
             # check oss file exist
+            from botocore.exceptions import ClientError
+
             try:
                 oss_file_info = self.oss_client.head_object(
                     Bucket=setting.oss.bucket,

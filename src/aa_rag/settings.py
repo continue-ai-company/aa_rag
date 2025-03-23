@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional, Any, Literal
 
 from dotenv.main import DotEnv
-from pydantic import BaseModel, Field, SecretStr, field_validator
+from pydantic import BaseModel, Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from aa_rag.gtypes.enums import (
@@ -81,10 +81,10 @@ class OpenAI(BaseModel):
         description="Base URL for OpenAI API requests.",
     )
 
-    @field_validator("api_key")
-    def check_api_key(cls, v):
-        assert v.get_secret_value(), "API key is required."
-        return v
+    @model_validator(mode="after")
+    def check_api_key(self):
+        assert self.api_key.get_secret_value(), "API key is required."
+        return self
 
 
 class Storage(BaseModel):
@@ -142,14 +142,14 @@ class Storage(BaseModel):
             default=None, description="Password for the Neo4j server."
         )
 
-        @field_validator("uri")
-        def check(cls, v):
-            if v:
+        @model_validator(mode="after")
+        def check(self):
+            if self.uri:
                 if importlib.util.find_spec("neo4j") is None:
                     raise ImportError(
                         "Neo4j can only be enabled on the online service, please execute `pip install aa-rag[online]`."
                     )
-            return v
+            return self
 
     lancedb: LanceDB = Field(
         default_factory=LanceDB, description="LanceDB database configuration settings."
@@ -179,25 +179,20 @@ class Storage(BaseModel):
         description="Type of NoSQL database used.",
     )
 
-    @field_validator("vector")
-    def check_vector_db(cls, v):
-        if v == VectorDBType.LANCE:
-            # check whether install lancedb package
-            if importlib.util.find_spec("lancedb") is None:
+    @model_validator(mode="after")
+    def check(self):
+        if self.vector == VectorDBType.MILVUS:
+            if importlib.util.find_spec("pymilvus") is None:
                 raise ImportError(
-                    "LanceDB can only be enabled on the online service, please execute `pip install aa-rag[online]`."
+                    "Milvus can only be enabled on the online service, please execute `pip install aa-rag[online]`."
                 )
-        return v
+        if self.nosql == NoSQLDBType.TINYDB:
+            if importlib.util.find_spec("tinydb") is None:
+                raise ImportError(
+                    "TinyDB can only be enabled on the online service, please execute `pip install aa-rag[online]`."
+                )
 
-    @field_validator("nosql")
-    def check_nosql_db(cls, v):
-        if v == NoSQLDBType.MONGODB:
-            # check whether install pymongo package
-            if importlib.util.find_spec("pymongo") is None:
-                raise ImportError(
-                    "MongoDB can only be enabled on the online service, please execute `pip install aa-rag[online]`."
-                )
-        return v
+        return self
 
 
 class Embedding(BaseModel):
@@ -289,14 +284,14 @@ class Engine(BaseModel):
             description="Number of top items to retrieve. Represents entities in 'local' mode and relationships in 'global' mode.",
         )
 
-        @field_validator("graph_storage")
-        def check(cls, v):
-            if v == LightRAGGraphStorageType.NEO4J:
+        @model_validator(mode="after")
+        def check(self):
+            if self.graph_storage == LightRAGGraphStorageType.NEO4J:
                 if importlib.util.find_spec("neo4j") is None:
                     raise ImportError(
                         "Neo4j can only be enabled on the online service, please execute `pip install aa-rag[online]`."
                     )
-            return v
+            return self
 
     type: EngineType = Field(
         default=EngineType.SimpleChunk,
@@ -356,14 +351,14 @@ class OSS(BaseModel):
         description="Bucket name for storing cache data.",
     )
 
-    @field_validator("access_key")
-    def check_access_key(cls, v):
-        if v:
+    @model_validator(mode="after")
+    def check(self):
+        if self.access_key:
             if importlib.util.find_spec("boto3") is None:
                 raise ImportError(
                     "OSS can only be enabled on the online service, please execute `pip install aa-rag[online]`."
                 )
-        return v
+        return self
 
 
 class Settings(BaseSettings):
