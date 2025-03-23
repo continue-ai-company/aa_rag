@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from starlette.responses import JSONResponse
 
 from aa_rag.gtypes.models.knowlege_base.solution import (
     SolutionIndexItem,
@@ -48,7 +49,17 @@ async def retrieve(item: SolutionRetrieveItem):
     guide: Guide | None = solution.retrieve(
         **item.model_dump(include={"env_info", "project_meta"})
     )
-
-    return SolutionRetrieveResponse(
-        code=200, status="success", data=SolutionRetrieveResponse.Data(guide=guide)
-    )
+    if guide is None:
+        return JSONResponse(
+            status_code=404,
+            content=SolutionRetrieveResponse(
+                code=404,
+                status="failed",
+                message="Guide not found",
+                data=SolutionRetrieveResponse.Data(guide=None),
+            ).model_dump(),
+        )
+    else:
+        return SolutionRetrieveResponse(
+            code=200, status="success", data=SolutionRetrieveResponse.Data(guide=guide)
+        )
