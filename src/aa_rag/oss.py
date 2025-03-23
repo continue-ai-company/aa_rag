@@ -1,11 +1,10 @@
+import importlib
 import logging
 from os import PathLike
 from pathlib import Path
 from typing import Tuple, Optional
 from urllib.parse import quote
 
-import boto3
-from botocore.exceptions import BotoCoreError, ClientError
 from langchain_core.documents import Document
 from pydantic import BaseModel, Field, HttpUrl, model_validator
 
@@ -65,7 +64,9 @@ class OSSStore:
         oss_bucket: str = setting.oss.bucket,
         oss_cache_bucket: str = setting.oss.cache_bucket,
         oss_access_key: str = setting.oss.access_key,
-        oss_secret_key: str = setting.oss.secret_key.get_secret_value(),
+        oss_secret_key: str = setting.oss.secret_key.get_secret_value()
+        if setting.oss.secret_key
+        else None,
     ):
         """
         Initialize the BaseParser with OSS settings and cache options.
@@ -83,6 +84,8 @@ class OSSStore:
         )
 
         if self.oss_available:
+            import boto3
+
             self.oss_client = boto3.client(
                 "s3",
                 endpoint_url=oss_endpoint,
@@ -141,11 +144,17 @@ class OSSStore:
         Returns:
             Tuple[bool, bool]: A tuple of two boolean values. The first value indicates whether the OSS service is valid. The second value indicates whether the cache bucket is valid.
         """
+
         if not all([oss_access_key, oss_secret_key]):
             return False, False
 
         # Create S3 client
         try:
+            if importlib.util.find_spec("botocore"):
+                from botocore.exceptions import BotoCoreError, ClientError
+            else:
+                raise ImportError("botocore not found")
+
             oss_client = boto3.client(
                 "s3",
                 endpoint_url=oss_endpoint,
