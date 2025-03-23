@@ -221,6 +221,8 @@ class SimpleChunk(
                         name="identifier",
                         dtype=DataType.ARRAY,
                         element_type=DataType.VARCHAR,
+                        max_length=65535,
+                        max_capacity=4096,
                     )
 
                     schema = CollectionSchema(
