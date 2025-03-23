@@ -2,8 +2,6 @@ from configparser import ConfigParser
 from typing import List, Union, Literal, Dict
 
 from langchain_core.documents import Document
-from lightrag import LightRAG, QueryParam
-from lightrag.llm.openai import openai_embed, openai_complete
 from pydantic import BaseModel, Field, SecretStr
 
 from aa_rag import setting, utils
@@ -66,6 +64,10 @@ class LightRAGEngine(
         )
 
         self._generate_ini_config_file()  # !! generate config.ini file because lightrag do not support specifying config file path
+
+        from lightrag import LightRAG
+        from lightrag.llm.openai import openai_embed
+        from lightrag.llm.openai import openai_complete
 
         self.rag = LightRAG(
             working_dir=dfs_setting.dir,
@@ -140,6 +142,8 @@ class LightRAGEngine(
         await self.rag.ainsert(input=[doc.page_content for doc in docs], ids=id_s)
 
     async def retrieve(self, params: LightRAGRetrieveParams):
+        from lightrag import QueryParam
+
         context_str = await self.rag.aquery(
             query=params.query,
             param=QueryParam(
