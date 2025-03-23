@@ -207,7 +207,7 @@ class BaseParser(OSSStore):
         self,
         file_path: PathLike,
         source: Literal["local", "oss"],
-        oss_resource_info: OSSResourceInfo,
+        oss_resource_info: OSSResourceInfo = None,
         **kwargs,
     ) -> Document:
         """

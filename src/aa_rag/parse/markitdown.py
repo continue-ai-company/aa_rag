@@ -51,7 +51,7 @@ class MarkitDownParser(BaseParser):
         self,
         file_path: PathLike,
         source: Literal["local", "oss"],
-        oss_resource_info: OSSResourceInfo,
+        oss_resource_info: OSSResourceInfo = None,
         **kwargs,
     ) -> Document:
         """
@@ -60,7 +60,7 @@ class MarkitDownParser(BaseParser):
         Args:
             file_path (PathLike): The file path to parse.
             source (Literal["local", "oss"]): The source of the file.
-            oss_resource_info (OSSResourceInfo): The OSS resource info.
+            oss_resource_info (OSSResourceInfo): The OSS resource info. Defaults to None.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -72,18 +72,23 @@ class MarkitDownParser(BaseParser):
         else:
             content_str = self.mtd_client.convert(str(file_path)).text_content
 
-        return Document(
-            page_content=content_str,
-            metadata={
-                "source": f"{source}://{oss_resource_info.source_file_path}",
-                "oss_info": oss_resource_info.model_dump(
-                    exclude={
-                        "url",
-                        "suffix",
-                    }
-                ),
-            },
-        )
+        if source == "oss":
+            return Document(
+                page_content=content_str,
+                metadata={
+                    "source": f"{source}://{oss_resource_info.source_file_path}",
+                    "oss_info": oss_resource_info.model_dump(
+                        exclude={
+                            "url",
+                            "suffix",
+                        }
+                    ),
+                },
+            )
+        else:
+            return Document(
+                page_content=content_str, metadata={"source": f"{source}://{file_path}"}
+            )
 
     def _parse_content(self, content: str, **kwargs) -> Document:
         """
