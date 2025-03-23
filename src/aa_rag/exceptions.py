@@ -15,9 +15,9 @@ async def handle_exception_error(request, exc):
 
     """
     return JSONResponse(
-        status_code=status.HTTP_400_BAD_REQUEST,
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content=BaseResponse(
-            code=status.HTTP_400_BAD_REQUEST,
+            code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             status="failed",
             message=f"{type(exc).__name__} Error",
             data=str(exc),
