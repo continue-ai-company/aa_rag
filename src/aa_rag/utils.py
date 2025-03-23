@@ -75,6 +75,7 @@ def get_llm(model_name: str) -> BaseChatModel:
         model=model_name,
         api_key=setting.openai.api_key,
         base_url=setting.openai.base_url,
+        temperature=0,
     )
 
     return model
