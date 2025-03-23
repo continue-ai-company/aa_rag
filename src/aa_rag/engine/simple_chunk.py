@@ -218,7 +218,8 @@ class SimpleChunk(
 
                     identifier_field = FieldSchema(
                         name="identifier",
-                        dtype=DataType.JSON,
+                        dtype=DataType.ARRAY,
+                        element_type=DataType.VARCHAR,
                     )
 
                     schema = CollectionSchema(
@@ -287,13 +288,13 @@ class SimpleChunk(
         if only_return_retriever:
             dense_retriever = dense_retriever.as_retriever()
             dense_retriever.search_kwargs = {
-                "expr": f'json_contains(identifier, "{self.identifier}")'
+                "expr": f'array_contains(identifier, "{self.identifier}")'
             }
             return dense_retriever
 
         # Perform the similarity search and return the results
         result: List[Document] = dense_retriever.similarity_search(
-            query, k=top_k, expr=f'json_contains(identifier, "{self.identifier}")'
+            query, k=top_k, expr=f'array_contains(identifier, "{self.identifier}")'
         )
 
         return result
@@ -323,7 +324,7 @@ class SimpleChunk(
         # get retriever
         with vector_db.using(table_name) as table:
             all_doc = table.query(
-                f"json_contains(identifier,'{self.identifier}')",
+                f"array_contains(identifier,'{self.identifier}')",
                 limit=-1,
                 output_fields=["id", "text", "metadata"],
             )  # get all documents
@@ -347,7 +348,7 @@ class SimpleChunk(
 
         # retrieve
         result: List[Document] = sparse_retriever.invoke(
-            query, expr=f'json_contains(identifier, "{self.identifier}")'
+            query, expr=f'array_contains(identifier, "{self.identifier}")'
         )
 
         return result
@@ -380,7 +381,7 @@ class SimpleChunk(
             weights=[dense_weight, sparse_weight],
         )
         return ensemble_retriever.invoke(
-            query, expr=f'json_contains(identifier, "{self.identifier}")'
+            query, expr=f'array_contains(identifier, "{self.identifier}")'
         )[:top_k]
 
     def index(
