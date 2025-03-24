@@ -41,8 +41,14 @@ async def retrieve(item: QARetrieveItem, response: Response):
     qa = QAKnowledge()
 
     result = qa.retrieve(**item.model_dump(include={"error_desc", "tags"}))
-    return QARetrieveResponse(
-        response=response,
-        message="Retrieving completed in QA Knowledge Base",
-        data=result,
-    )
+    if result:
+        return QARetrieveResponse(
+            response=response,
+            message="Retrieved from QA Knowledge Base",
+            data=result,
+        )
+    else:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return QARetrieveResponse(
+            response=response, message="No result found in QA Knowledge Base"
+        )
