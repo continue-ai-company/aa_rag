@@ -12,7 +12,9 @@ class QAIndexItem(BaseModel):
     error_solution: str = Field(
         ..., examples=["error_solution"], description="The error solution"
     )
-    tags: list[str] = Field(..., examples=[["tags"]], description="The tags of the QA")
+    tags: list[str] = Field(
+        default_factory=list, examples=[["tags"]], description="The tags of the QA"
+    )
 
 
 class QAIndexResponse(BaseResponse):

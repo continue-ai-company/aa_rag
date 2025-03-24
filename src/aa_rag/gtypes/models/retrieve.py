@@ -36,7 +36,10 @@ class LightRAGRetrieveItem(
 
 class RetrieveResponse(BaseResponse):
     class Data(BaseModel):
-        documents: List[Document] = Field(default=..., examples=[[]])
+        documents: List[Document] = Field(
+            default=...,
+            examples=[{"metadata": {"source": "oss://..."}, "page_content": "....."}],
+        )
 
         @field_validator("documents")
         def validate_documents(cls, v):
