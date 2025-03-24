@@ -42,7 +42,8 @@ class SimpleChunkIndexParams(BaseIndexParams, StoreImageParams):
 class SimpleChunkRetrieveParams(BaseModel):
     query: str = Field(..., min_length=1)
     top_k: int = Field(
-        dfs_setting.retrieve.k, description="The number of top results to return."
+        default=dfs_setting.retrieve.k,
+        description="The number of top results to return.",
     )
     retrieve_mode: RetrieveType = Field(
         default=dfs_setting.retrieve.type, description="The retrieval method."
