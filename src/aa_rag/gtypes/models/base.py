@@ -13,10 +13,20 @@ class BaseResponse(BaseModel):
 
     message: str = Field(default=...)
     data: List[Document] = Field(
-        default_factory=list, description="The data of the response"
+        default_factory=list,
+        description="The data of the response",
+        examples=[
+            {
+                "metadata": {
+                    "source": "local://....",
+                    "url": "https://....",
+                },
+                "page_content": "....",
+            }
+        ],
     )
 
-    @computed_field(return_type=int)
+    @computed_field(return_type=int, examples=[200])
     @property
     def code(self):
         return self.response.status_code or self.default_response_code
