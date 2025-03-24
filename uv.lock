@@ -10,7 +10,7 @@ resolution-markers = [
 
 [[package]]
 name = "aa-rag"
-version = "0.3.2.1"
+version = "0.3.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi", extra = ["standard"] },
