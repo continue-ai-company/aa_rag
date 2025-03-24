@@ -23,7 +23,7 @@ async def root():
     }
 
 
-@router.post("/index")
+@router.post("/index", response_model=SolutionIndexResponse)
 async def index(item: SolutionIndexItem):
     solution = SolutionKnowledge(**item.model_dump(include={"llm", "embedding_model"}))
 
@@ -40,7 +40,7 @@ async def index(item: SolutionIndexItem):
     )
 
 
-@router.post("/retrieve")
+@router.post("/retrieve", response_model=SolutionRetrieveResponse)
 async def retrieve(item: SolutionRetrieveItem):
     solution = SolutionKnowledge(
         **item.model_dump(include={"llm", "embedding_model", "relation_db_path"})

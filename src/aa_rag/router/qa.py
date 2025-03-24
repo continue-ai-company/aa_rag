@@ -21,7 +21,7 @@ async def root():
     }
 
 
-@router.post("/index")
+@router.post("/index", response_model=QAIndexResponse)
 async def index(item: QAIndexItem):
     qa = QAKnowledge()
 
@@ -37,7 +37,7 @@ async def index(item: QAIndexItem):
     )
 
 
-@router.post("/retrieve")
+@router.post("/retrieve", response_model=QARetrieveResponse)
 async def retrieve(item: QARetrieveItem):
     qa = QAKnowledge()
 

@@ -33,7 +33,7 @@ async def root(item: RetrieveItem):
             raise HTTPException(status_code=400, detail="RetrieveType not supported")
 
 
-@router.post("/chunk", tags=["SimpleChunk"])
+@router.post("/chunk", tags=["SimpleChunk"], response_model=RetrieveResponse)
 async def chunk_retrieve(item: SimpleChunkRetrieveItem) -> RetrieveResponse:
     engine = SimpleChunk(SimpleChunkInitParams(**item.model_dump()))
 
@@ -47,7 +47,7 @@ async def chunk_retrieve(item: SimpleChunkRetrieveItem) -> RetrieveResponse:
     )
 
 
-@router.post("/lightrag", tags=["LightRAG"])
+@router.post("/lightrag", tags=["LightRAG"], response_model=RetrieveResponse)
 async def lightrag_retrieve(item: LightRAGRetrieveItem) -> RetrieveResponse:
     engine = LightRAGEngine(LightRAGInitParams(**item.model_dump()))
 

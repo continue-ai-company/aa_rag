@@ -35,7 +35,7 @@ async def root(item: IndexItem):
             raise HTTPException(status_code=400, detail="IndexType not supported")
 
 
-@router.post("/chunk", tags=["SimpleChunk"])
+@router.post("/chunk", tags=["SimpleChunk"], response_model=IndexResponse)
 async def chunk_index(item: SimpleChunkIndexItem) -> IndexResponse:
     source_data = await utils.parse_content(params=ParserNeedItem(**item.model_dump()))
 
@@ -59,7 +59,7 @@ async def chunk_index(item: SimpleChunkIndexItem) -> IndexResponse:
     )
 
 
-@router.post("/lightrag", tags=["LightRAG"])
+@router.post("/lightrag", tags=["LightRAG"], response_model=IndexResponse)
 async def lightrag_index(item: LightRAGIndexItem) -> IndexResponse:
     # parse content
     source_data = await utils.parse_content(params=ParserNeedItem(**item.model_dump()))
