@@ -164,4 +164,6 @@ class QAKnowledge(BaseKnowledge):
 
         hit_doc_id_s = chain.invoke({"info_json": info_dict})
 
-        return [id2doc[doc_id] for doc_id in hit_doc_id_s]
+        result = [id2doc[doc_id] for doc_id in hit_doc_id_s]
+
+        return result

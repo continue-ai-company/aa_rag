@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 
 from aa_rag.engine.lightrag import (
     LightRAGEngine,
@@ -23,39 +23,31 @@ router = APIRouter(
 )
 
 
-@router.post("/")
-async def root(item: RetrieveItem):
-    match item.engine_type:
-        case EngineType.SimpleChunk:
-            chunk_item = SimpleChunkRetrieveItem(**item.model_dump())
-            return await chunk_retrieve(chunk_item)
-        case _:
-            raise HTTPException(status_code=400, detail="RetrieveType not supported")
-
-
 @router.post("/chunk", tags=["SimpleChunk"], response_model=RetrieveResponse)
-async def chunk_retrieve(item: SimpleChunkRetrieveItem) -> RetrieveResponse:
+async def chunk_retrieve(
+    item: SimpleChunkRetrieveItem, response: Response
+) -> RetrieveResponse:
     engine = SimpleChunk(SimpleChunkInitParams(**item.model_dump()))
 
     result = engine.retrieve(SimpleChunkRetrieveParams(**item.model_dump()))
 
     return RetrieveResponse(
-        code=200,
-        status="success",
+        response=response,
         message=f"Retrieval completed via HybridRetrieve in {item.retrieve_mode}",
-        data=RetrieveResponse.Data(documents=result),
+        data=result,
     )
 
 
 @router.post("/lightrag", tags=["LightRAG"], response_model=RetrieveResponse)
-async def lightrag_retrieve(item: LightRAGRetrieveItem) -> RetrieveResponse:
+async def lightrag_retrieve(
+    item: LightRAGRetrieveItem, response: Response
+) -> RetrieveResponse:
     engine = LightRAGEngine(LightRAGInitParams(**item.model_dump()))
 
     result = await engine.retrieve(LightRAGRetrieveParams(**item.model_dump()))
 
     return RetrieveResponse(
-        code=200,
-        status="success",
+        response=response,
         message=f"Retrieval completed via LightRAGRetrieve in {item.retrieve_mode}",
-        data=RetrieveResponse.Data(documents=result),
+        data=result,
     )

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import Field, ConfigDict
 
 from aa_rag import setting
 from aa_rag.engine.lightrag import LightRAGInitParams, LightRAGIndexParams
@@ -35,11 +35,8 @@ class LightRAGIndexItem(LightRAGInitParams, LightRAGIndexParams, BaseIndexItem):
 
 
 class IndexResponse(BaseResponse):
-    class Data(BaseModel):
-        pass
-
+    default_response_code: int = Field(default=201, exclude=True)
     message: str = Field(
         default="Indexing completed via SimpleChunkIndex",
         examples=["Indexing completed via SimpleChunkIndex"],
     )
-    data: Data = Field(default_factory=Data)

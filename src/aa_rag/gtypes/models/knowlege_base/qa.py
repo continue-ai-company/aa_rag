@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from pydantic import BaseModel, Field
 
 from aa_rag.gtypes.models.base import BaseResponse
@@ -18,12 +16,7 @@ class QAIndexItem(BaseModel):
 
 
 class QAIndexResponse(BaseResponse):
-    class Data(BaseModel):
-        affect_row_ids: Optional[List[str]] = Field(
-            None, examples=["1"], description="The id of the inserted row"
-        )
-
-    data: Data = Field(..., description="The data of the response")
+    default_response_code: int = Field(default=201, exclude=True)
 
 
 class QARetrieveItem(BaseModel):
@@ -36,16 +29,4 @@ class QARetrieveItem(BaseModel):
 
 
 class QARetrieveResponse(BaseResponse):
-    class Data(BaseModel):
-        qa: List[dict] = Field(
-            ...,
-            examples=[
-                {
-                    "error_desc": "error_desc",
-                    "error_solution": "error_solution",
-                    "tags": ["tags"],
-                }
-            ],
-        )
-
-    data: Data = Field(..., description="The data of the response")
+    pass

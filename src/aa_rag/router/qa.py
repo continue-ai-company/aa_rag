@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, status, Response
 
 from aa_rag.gtypes.models.knowlege_base.qa import (
     QAIndexItem,
@@ -21,30 +21,28 @@ async def root():
     }
 
 
-@router.post("/index", response_model=QAIndexResponse)
-async def index(item: QAIndexItem):
+@router.post(
+    "/index", response_model=QAIndexResponse, status_code=status.HTTP_201_CREATED
+)
+async def index(item: QAIndexItem, response: Response):
     qa = QAKnowledge()
 
-    result = qa.index(
-        **item.model_dump(include={"error_desc", "error_solution", "tags"})
-    )
+    qa.index(**item.model_dump(include={"error_desc", "error_solution", "tags"}))
 
     return QAIndexResponse(
-        code=200,
-        status="success",
+        response=response,
         message="Indexing completed in QA Knowledge Base",
-        data=QAIndexResponse.Data(affect_row_ids=result),
+        data=[],
     )
 
 
 @router.post("/retrieve", response_model=QARetrieveResponse)
-async def retrieve(item: QARetrieveItem):
+async def retrieve(item: QARetrieveItem, response: Response):
     qa = QAKnowledge()
 
     result = qa.retrieve(**item.model_dump(include={"error_desc", "tags"}))
     return QARetrieveResponse(
-        code=200,
-        status="success",
+        response=response,
         message="Retrieving completed in QA Knowledge Base",
-        data=QARetrieveResponse.Data(qa=result),
+        data=result,
     )

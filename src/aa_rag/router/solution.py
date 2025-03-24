@@ -1,6 +1,6 @@
-from fastapi import APIRouter
-from starlette.responses import JSONResponse
+from fastapi import APIRouter, status, Response
 
+from aa_rag import utils
 from aa_rag.gtypes.models.knowlege_base.solution import (
     SolutionIndexItem,
     SolutionIndexResponse,
@@ -23,25 +23,19 @@ async def root():
     }
 
 
-@router.post("/index", response_model=SolutionIndexResponse)
-async def index(item: SolutionIndexItem):
+@router.post(
+    "/index", response_model=SolutionIndexResponse, status_code=status.HTTP_201_CREATED
+)
+async def index(item: SolutionIndexItem, response: Response):
     solution = SolutionKnowledge(**item.model_dump(include={"llm", "embedding_model"}))
 
-    affect_row_num_s = solution.index(
-        **item.model_dump(include={"env_info", "procedure", "project_meta"})
-    )
+    solution.index(**item.model_dump(include={"env_info", "procedure", "project_meta"}))
 
-    return SolutionIndexResponse(
-        code=200,
-        status="success",
-        data=SolutionIndexResponse.Data(
-            affect_row_num=affect_row_num_s, table_name="solution"
-        ),
-    )
+    return SolutionIndexResponse(response=response)
 
 
 @router.post("/retrieve", response_model=SolutionRetrieveResponse)
-async def retrieve(item: SolutionRetrieveItem):
+async def retrieve(item: SolutionRetrieveItem, response: Response):
     solution = SolutionKnowledge(
         **item.model_dump(include={"llm", "embedding_model", "relation_db_path"})
     )
@@ -50,16 +44,12 @@ async def retrieve(item: SolutionRetrieveItem):
         **item.model_dump(include={"env_info", "project_meta"})
     )
     if guide is None:
-        return JSONResponse(
-            status_code=404,
-            content=SolutionRetrieveResponse(
-                code=404,
-                status="failed",
-                message="Guide not found",
-                data=SolutionRetrieveResponse.Data(guide=None),
-            ).model_dump(),
+        response.status_code = 404
+        return SolutionRetrieveResponse(
+            response=response,
+            message="Guide not found",
         )
     else:
         return SolutionRetrieveResponse(
-            code=200, status="success", data=SolutionRetrieveResponse.Data(guide=guide)
+            response=response, data=[utils.guide2document(guide)]
         )

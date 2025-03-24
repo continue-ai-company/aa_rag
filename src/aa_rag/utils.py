@@ -17,6 +17,7 @@ from aa_rag.db.milvus_ import MilvusDataBase
 from aa_rag.db.mongo_ import MongoDBDataBase
 from aa_rag.db.tinydb_ import TinyDBDataBase
 from aa_rag.gtypes.enums import VectorDBType, NoSQLDBType, ParsingType
+from aa_rag.gtypes.models.knowlege_base.solution import Guide
 from aa_rag.gtypes.models.parse import ParserNeedItem
 from aa_rag.parse.markitdown import MarkitDownParser
 import base64
@@ -231,3 +232,9 @@ def convert_img_base64_to_file_info(
         ext = ".bin"  # 无 MIME 类型时默认
 
     return f"{md5_hash}{ext}", mime_type, binary_data
+
+
+def guide2document(guide: Guide) -> Document:
+    return Document(
+        page_content=guide.procedure, metadata={"compatible_env": guide.compatible_env}
+    )

@@ -54,31 +54,15 @@ class SolutionRetrieveItem(BaseKnowledgeItem):
 
 
 class SolutionIndexResponse(BaseResponse):
-    class Data(BaseModel):
-        affect_row_num: int = Field(default=..., examples=[0])
-        table_name: str = Field("solution", examples=["solution"])
-
+    default_response_code: int = Field(default=201, exclude=True)
     message: str = Field(
         default="Indexing completed in Solution Knowledge Base",
         examples=["Indexing completed in Solution Knowledge Base"],
     )
-    data: Data = Field(default_factory=Data)
 
 
 class SolutionRetrieveResponse(BaseResponse):
-    class Data(BaseModel):
-        guide: Guide | None = Field(
-            default=...,
-            examples=[
-                Guide(
-                    procedure="xxx",
-                    compatible_env=CompatibleEnv(platform="xxx", arch="xxx"),
-                )
-            ],
-        )
-
     message: str = Field(
         default="Retrieval completed in Solution Knowledge Base",
         examples=["Retrieval completed in Solution Knowledge Base"],
     )
-    data: Data = Field(default_factory=Data)

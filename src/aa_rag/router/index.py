@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response, status
 
 from aa_rag import utils
 from aa_rag.engine.lightrag import (
@@ -25,18 +25,13 @@ router = APIRouter(
 )
 
 
-@router.post("/")
-async def root(item: IndexItem):
-    match item.engine_type:
-        case EngineType.SimpleChunk:
-            chunk_item = SimpleChunkIndexItem(**item.model_dump())
-            return await chunk_index(chunk_item)
-        case _:
-            raise HTTPException(status_code=400, detail="IndexType not supported")
-
-
-@router.post("/chunk", tags=["SimpleChunk"], response_model=IndexResponse)
-async def chunk_index(item: SimpleChunkIndexItem) -> IndexResponse:
+@router.post(
+    "/chunk",
+    tags=["SimpleChunk"],
+    response_model=IndexResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def chunk_index(item: SimpleChunkIndexItem, response: Response) -> IndexResponse:
     source_data = await utils.parse_content(params=ParserNeedItem(**item.model_dump()))
 
     # index content
@@ -50,17 +45,18 @@ async def chunk_index(item: SimpleChunkIndexItem) -> IndexResponse:
             }
         )
     )
-
     return IndexResponse(
-        code=200,
-        status="success",
-        message="Indexing completed via SimpleChunkIndex",
-        data=IndexResponse.Data(),
+        response=response, message="Indexing completed via SimpleChunkIndex", data=[]
     )
 
 
-@router.post("/lightrag", tags=["LightRAG"], response_model=IndexResponse)
-async def lightrag_index(item: LightRAGIndexItem) -> IndexResponse:
+@router.post(
+    "/lightrag",
+    tags=["LightRAG"],
+    response_model=IndexResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def lightrag_index(item: LightRAGIndexItem, response: Response) -> IndexResponse:
     # parse content
     source_data = await utils.parse_content(params=ParserNeedItem(**item.model_dump()))
 
@@ -77,8 +73,5 @@ async def lightrag_index(item: LightRAGIndexItem) -> IndexResponse:
     )
 
     return IndexResponse(
-        code=200,
-        status="success",
-        message="Indexing completed via LightRAGIndex",
-        data=IndexResponse.Data(),
+        response=response, message="Indexing completed via LightRAGIndex", data=[]
     )

@@ -1,6 +1,3 @@
-from typing import List
-
-from langchain_core.documents import Document
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 from aa_rag import setting
@@ -35,24 +32,17 @@ class LightRAGRetrieveItem(
 
 
 class RetrieveResponse(BaseResponse):
-    class Data(BaseModel):
-        documents: List[Document] = Field(
-            default=...,
-            examples=[{"metadata": {"source": "oss://..."}, "page_content": "....."}],
-        )
-
-        @field_validator("documents")
-        def validate_documents(cls, v):
-            doc_s = [doc.model_dump(include={"metadata", "page_content"}) for doc in v]
-
-            for doc in v:
-                if "metadata" in doc:
-                    if "identifier" in doc["metadata"]:
-                        doc.pop("identifier")
-
-            return doc_s
-
     message: str = Field(
         default="Retrieval completed via BaseRetrieve", examples=["Retrieval completed"]
     )
-    data: Data = Field(default_factory=Data)
+
+    @field_validator("data")
+    def validate(cls, v):
+        doc_s = [doc.model_dump(include={"metadata", "page_content"}) for doc in v]
+
+        for doc in v:
+            if "metadata" in doc:
+                if "identifier" in doc["metadata"]:
+                    doc.pop("identifier")
+
+        return doc_s
