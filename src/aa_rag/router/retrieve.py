@@ -31,11 +31,18 @@ async def chunk_retrieve(
 
     result = engine.retrieve(SimpleChunkRetrieveParams(**item.model_dump()))
 
-    return RetrieveResponse(
-        response=response,
-        message=f"Retrieval completed via HybridRetrieve in {item.retrieve_mode}",
-        data=result,
-    )
+    if result:
+        return RetrieveResponse(
+            response=response,
+            message=f"Retrieval completed via HybridRetrieve in {item.retrieve_mode}",
+            data=result,
+        )
+    else:
+        response.status_code = 404
+        raise HTTPException(
+            status_code=404,
+            detail="No data found",
+        )
 
 
 @router.post("/lightrag", tags=["LightRAG"], response_model=RetrieveResponse)

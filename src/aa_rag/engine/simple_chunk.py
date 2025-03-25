@@ -8,7 +8,6 @@ from langchain_core.retrievers import BaseRetriever
 from langchain_milvus import Milvus
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pydantic import BaseModel, Field
-from sqlalchemy.testing.suite.test_reflection import metadata
 
 from aa_rag import setting, utils
 from aa_rag.db.base import BaseDataBase, BaseVectorDataBase
@@ -308,7 +307,7 @@ class SimpleChunk(
         query: str,
         top_k: int = dfs_setting.retrieve.k,
         only_return_retriever=False,
-    ) -> BaseRetriever | List[Document]:
+    ) -> BaseRetriever | List[Document] | None:
         """
         Perform a BM25 retrieval of documents based on the query.
 
@@ -318,7 +317,7 @@ class SimpleChunk(
             only_return_retriever (bool, optional): If True, only return the retriever object. Defaults to False.
 
         Returns:
-            BaseRetriever | List[Document]: The retriever object if only_return_retriever is True, otherwise a list of retrieved documents.
+            BaseRetriever | List[Document|None: The retriever object if only_return_retriever is True, otherwise a list of retrieved documents. If build BM25 retriever failed, return None.
         """
         vector_db, table_name = self.db, self.table_name
         assert isinstance(vector_db, BaseVectorDataBase), (
@@ -332,6 +331,9 @@ class SimpleChunk(
                 limit=-1,
                 output_fields=["id", "text", "metadata"],
             )  # get all documents
+            if not all_doc:
+                return None
+
             all_doc_df = pd.DataFrame(all_doc)
             all_doc_s = (
                 all_doc_df[["id", "text", "metadata"]]
@@ -378,6 +380,9 @@ class SimpleChunk(
         """
         dense_retriever = self._dense_retrieve(query, top_k, only_return_retriever=True)
         sparse_retriever = self._bm25_retrieve(query, top_k, only_return_retriever=True)
+
+        if sparse_retriever is None:
+            return []
 
         # combine the all retrievers
         ensemble_retriever = EnsembleRetriever(
