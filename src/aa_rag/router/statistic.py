@@ -71,13 +71,16 @@ def qa(response: Response):
 
 @solution_router.get("/statistic")
 @router.get("/solution")
-def solution(response: Response):
+def solution(response: Response, project_name: str | None = None):
     result: Dict[str, Dict] = {}
     solution_obj = SolutionKnowledge()
 
     with solution_obj.nosql_db.using(solution_obj.table_name) as table:
-        all_docs_s = table.select()
-        for record in all_docs_s:
+        if project_name:
+            hit_docs_s = table.select({"name": project_name})
+        else:
+            hit_docs_s = table.select()
+        for record in hit_docs_s:
             record.pop("_id") if "_id" in record.keys() else None
 
             project_name = record.get("name")
@@ -85,7 +88,7 @@ def solution(response: Response):
                 result[project_name] = {}
             result[project_name] = record
 
-    if all_docs_s:
+    if hit_docs_s:
         pass
     else:
         response.status_code = 404
