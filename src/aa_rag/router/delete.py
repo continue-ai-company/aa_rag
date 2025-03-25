@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Response
 
 from aa_rag.engine.simple_chunk import SimpleChunk, SimpleChunkInitParams
 from aa_rag.gtypes.models.delete import SimpleChunkDeleteItem, SolutionDeleteItem
@@ -48,14 +48,18 @@ def knowledge(request: SimpleChunkDeleteItem):
 
 @solution_router.post("/delete", status_code=status.HTTP_204_NO_CONTENT)
 @router.post("/solution", status_code=status.HTTP_204_NO_CONTENT)
-def solution(request: SolutionDeleteItem):
+def solution(request: SolutionDeleteItem, response: Response):
     solution_obj = SolutionKnowledge()
 
     if request.id:
         with solution_obj.nosql_db.using(solution_obj.table_name) as table:
             hit_record = table.select({"project_id": request.id})
 
-            guides = hit_record[0]["guides"]
+            try:
+                guides = hit_record[0]["guides"]
+            except:
+                response.status_code = status.HTTP_404_NOT_FOUND
+                return
 
             new_guides = []
             for guide in guides:
