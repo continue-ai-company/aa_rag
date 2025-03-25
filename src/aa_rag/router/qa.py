@@ -9,7 +9,7 @@ from aa_rag.gtypes.models.knowlege_base.qa import (
 from aa_rag.knowledge_base.built_in.qa import QAKnowledge
 
 router = APIRouter(
-    prefix="/qa", tags=["qa"], responses={404: {"description": "Not Found"}}
+    prefix="/qa", tags=["QA"], responses={404: {"description": "Not Found"}}
 )
 
 

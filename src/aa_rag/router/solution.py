@@ -11,7 +11,7 @@ from aa_rag.gtypes.models.knowlege_base.solution import (
 from aa_rag.knowledge_base.built_in.solution import SolutionKnowledge
 
 router = APIRouter(
-    prefix="/solution", tags=["solution"], responses={404: {"description": "Not Found"}}
+    prefix="/solution", tags=["Solution"], responses={404: {"description": "Not Found"}}
 )
 
 
