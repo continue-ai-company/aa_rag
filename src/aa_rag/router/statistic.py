@@ -1,8 +1,11 @@
+from typing import Dict, List
+
 from fastapi import APIRouter, Response
 
-from aa_rag import utils, setting
-from aa_rag.db.base import BaseVectorDataBase, BaseNoSQLDataBase
-from aa_rag.gtypes.models.statistic import StatisticKnowledgeItem
+from aa_rag.engine.simple_chunk import SimpleChunkInitParams, SimpleChunk
+from aa_rag.gtypes.models.statistic import SimpleChunkStatisticItem
+from aa_rag.knowledge_base.built_in.qa import QAKnowledge
+from aa_rag.knowledge_base.built_in.solution import SolutionKnowledge
 from aa_rag.router.qa import router as qa_router
 from aa_rag.router.solution import router as solution_router
 
@@ -13,53 +16,51 @@ router = APIRouter(
 )
 
 
-@router.get("/knowledge")
-def knowledge(request: StatisticKnowledgeItem, response: Response):
-    vector_db: BaseVectorDataBase = utils.get_vector_db(setting.storage.vector)
-    table_list = vector_db.table_list()
+@router.post("/knowledge")
+def knowledge(request: SimpleChunkStatisticItem, response: Response):
+    result: Dict[str, List] = {}
+    engine = SimpleChunk(params=SimpleChunkInitParams(**request.model_dump()))
 
-    hit_table_s = list(
-        filter(lambda x: x.split("__", 1)[0] == request.knowledge_name, table_list)
-    )
-
-    result = []
-    for table_name in hit_table_s:
-        with vector_db.using(table_name) as table:
-            hit_record_s = table.query(
-                f'array_contains(identifier,"{request.identifier}")',
-                output_fields=["metadata", "identifier"],
-            )
-            metadata_s = [_.get("metadata", {}) for _ in hit_record_s]
-            all_source = [_.get("source") for _ in metadata_s]
-            result.extend(all_source)
-
-    result = list(set(result))
-    if None in result:
-        result.remove(None)
-
-    if result:
-        return result
-    else:
+    if engine.table_name not in engine.db.table_list():
         response.status_code = 404
         return []
+    else:
+        with engine.db.using(engine.table_name) as table:
+            hit_record_s = table.query(
+                f'array_contains(identifier,"{request.identifier}")',
+                output_fields=["*"],
+            )
+
+            for record in hit_record_s:
+                record.pop("identifier") if "identifier" in record.keys() else None
+                record.pop("vector") if "vector" in record.keys() else None
+
+                source = record.get("metadata", {}).get("source")
+                assert source is not None, "source is None"
+
+                if source not in result.keys():
+                    result[source] = []
+                result[source].append(record)
+
+        if result:
+            return result
+        else:
+            response.status_code = 404
+            return []
 
 
 @qa_router.get("/statistic")
 @router.get("/qa")
 def qa(response: Response):
-    vector_db: BaseVectorDataBase = utils.get_vector_db(setting.storage.vector)
-    table_list = vector_db.table_list()
+    result: List = []
+    engine = QAKnowledge().engine
 
-    hit_table_s = list(filter(lambda x: x.split("__", 1)[0] == "qa", table_list))
-
-    result = []
-    for table_name in hit_table_s:
-        with vector_db.using(table_name) as table:
-            hit_record_s = table.query(output_fields=["text"])
-            text_s = [_.get("text") for _ in hit_record_s]
-            result.extend(text_s)
-
-    result = list(set(result))
+    with engine.db.using(engine.table_name) as table:
+        hit_record_s = table.query(output_fields=["*"])
+        for record in hit_record_s:
+            record.pop("identifier") if "identifier" in record.keys() else None
+            record.pop("vector") if "vector" in record.keys() else None
+            result.append(record)
 
     if result:
         return result
@@ -71,16 +72,21 @@ def qa(response: Response):
 @solution_router.get("/statistic")
 @router.get("/solution")
 def solution(response: Response):
-    nosql_db: BaseNoSQLDataBase = utils.get_nosql_db(setting.storage.nosql)
-    with nosql_db.using("solution") as table:
+    result: Dict[str, Dict] = {}
+    solution_obj = SolutionKnowledge()
+
+    with solution_obj.nosql_db.using(solution_obj.table_name) as table:
         all_docs_s = table.select()
-        for _ in all_docs_s:
-            _.pop("project_id") if "project_id" in _.keys() else None
-            _.pop("project_meta") if "project_meta" in _.keys() else None
-            _.pop("_id") if "_id" in _.keys() else None
+        for record in all_docs_s:
+            record.pop("_id") if "_id" in record.keys() else None
+
+            project_name = record.get("name")
+            if project_name not in result.keys():
+                result[project_name] = {}
+            result[project_name] = record
 
     if all_docs_s:
-        return all_docs_s
+        pass
     else:
         response.status_code = 404
-        return []
+    return result

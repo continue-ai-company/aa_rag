@@ -1,14 +1,9 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import field_validator
+
+from aa_rag.engine.simple_chunk import SimpleChunkInitParams
 
 
-class StatisticKnowledgeItem(BaseModel):
-    knowledge_name: str = Field(
-        ..., description="knowledge name", examples=["user_manual"]
-    )
-    identifier: str = Field(
-        default="common", description="The identifier of the knowledge"
-    )
-
+class SimpleChunkStatisticItem(SimpleChunkInitParams):
     @field_validator("knowledge_name")
     def check(cls, v):
         if "-" in v:
