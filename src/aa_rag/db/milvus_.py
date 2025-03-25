@@ -100,7 +100,9 @@ class MilvusDataBase(BaseVectorDataBase):
     def delete(self, where: str, **kwargs):
         """Delete entities with boolean expression"""
         assert self.using_collection_name, "Collection not loaded. Use using() first"
-        return self.connection.delete(self.using_collection_name, where, **kwargs)
+        return self.connection.delete(
+            self.using_collection_name, filter=where, **kwargs
+        )
 
     def upsert(self, data: list[dict] | DataFrame, **kwargs):
         """Upsert data into collection with JSON merge support"""
