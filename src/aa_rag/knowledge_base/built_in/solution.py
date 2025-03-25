@@ -120,9 +120,9 @@ class SolutionKnowledge(BaseKnowledge):
                 for item in guides_data
             ]
             project_id = record.get("project_id", None)
-            return Project(
-                **record.get("project_meta", {}), guides=guides, id=project_id
-            )
+            record_project_meta = record.get("project_meta", {})
+            record_project_meta.update(project_meta)
+            return Project(**record_project_meta, guides=guides, id=project_id)
         else:
             return None
 

@@ -1,6 +1,6 @@
 from typing import Any, Optional, List
 
-from pydantic import BaseModel, Field, AnyUrl, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict
 
 from aa_rag.gtypes.models.base import BaseResponse
 from aa_rag.gtypes.models.knowlege_base.base import BaseKnowledgeItem
@@ -29,7 +29,9 @@ class Project(BaseModel):
     name: str = Field(..., description="Project name")
     id: Optional[str] = Field(None, description="Project ID")
     description: Optional[str] = Field(None, description="Project description")
-    git_url: Optional[AnyUrl] = Field(None, description="Git URL of the project")
+    git_url: Optional[str] = Field(
+        None, description="Git URL of the project", alias="url"
+    )
     guides: Optional[List[Guide]] = Field(
         None, description="The deployment guide of the project"
     )
