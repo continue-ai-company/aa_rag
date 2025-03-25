@@ -222,7 +222,7 @@ class MilvusDataBase(BaseVectorDataBase):
     #         for hit in res[0]
     #     ]
 
-    def query(self, expr, **kwargs):
+    def query(self, expr=None, **kwargs):
         iterator = self.connection.query_iterator(
             batch_size=1000,
             collection_name=self.using_collection_name,

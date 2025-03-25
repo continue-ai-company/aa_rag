@@ -97,7 +97,7 @@ class BaseVectorDataBase(BaseDataBase, ABC):
         return NotImplemented
 
     @abstractmethod
-    def query(self, expr: str, **kwargs):
+    def query(self, expr: str = None, **kwargs):
         return NotImplemented
 
 
