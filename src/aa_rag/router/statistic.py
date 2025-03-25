@@ -75,8 +75,9 @@ def solution(response: Response):
     with nosql_db.using("solution") as table:
         all_docs_s = table.select()
         for _ in all_docs_s:
-            _.pop("project_id")
-            _.pop("project_meta")
+            _.pop("project_id") if "project_id" in _.keys() else None
+            _.pop("project_meta") if "project_meta" in _.keys() else None
+            _.pop("_id") if "_id" in _.keys() else None
 
     if all_docs_s:
         return all_docs_s
