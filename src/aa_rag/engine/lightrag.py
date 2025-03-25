@@ -58,7 +58,7 @@ class LightRAGEngine(
         **kwargs,
     ):
         namespace_prefix = (
-            f"{params.knowledge_name}_{embedding_model}_{params.identifier}".replace(
+            f"{params.knowledge_name}__{embedding_model}__{params.identifier}".replace(
                 "-", "_"
             )
         )

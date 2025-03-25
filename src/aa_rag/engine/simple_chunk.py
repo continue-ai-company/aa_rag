@@ -150,7 +150,7 @@ class SimpleChunk(
             f"db_obj must be an instance of BaseVectorDataBase, not {type(db_obj)}"
         )
 
-        table_name = f"{self.knowledge_name}_{self.type}_{self.embedding_model}"
+        table_name = f"{self.knowledge_name}__{self.type}__{self.embedding_model}"
 
         table_name = table_name.replace("-", "_")
 
