@@ -1,9 +1,8 @@
+import time
 from abc import abstractmethod
 from typing import TypeVar, Generic
 
-from pydantic import BaseModel, Field
-
-from aa_rag.db.multimodal import StoreImageParams
+from pydantic import BaseModel, Field, field_validator
 
 # 定义泛型参数
 IndexT = TypeVar("IndexT", bound=BaseModel)
@@ -17,6 +16,18 @@ class BaseIndexParams(BaseModel):
         examples=[{"url": "https://www.google.com"}],
         description="The metadata of the index item, the meatadata will be updated to the index item",
     )
+
+    @field_validator("metadata", mode="after")
+    def validate_metadata(cls, v):
+        # add timestamp to metadata
+        if "index_time" not in v:
+            v["index_time"] = [str(int(time.time()))]
+        else:
+            if isinstance(v["index_time"], list):
+                return v
+            elif isinstance(v["index_time"], str):
+                v["index_time"] = [v["index_time"]]
+        return v
 
 
 class BaseEngine(Generic[IndexT, RetrieveT, GenerateT]):

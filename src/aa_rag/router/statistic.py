@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+import pandas as pd
 from fastapi import APIRouter, Response
 
 from aa_rag.engine.simple_chunk import SimpleChunkInitParams, SimpleChunk
@@ -18,7 +19,7 @@ router = APIRouter(
 
 @router.post("/knowledge")
 def knowledge(request: SimpleChunkStatisticItem, response: Response):
-    result: Dict[str, List] = {}
+    result: List = []
     engine = SimpleChunk(params=SimpleChunkInitParams(**request.model_dump()))
 
     if engine.table_name not in engine.db.table_list():
@@ -28,19 +29,27 @@ def knowledge(request: SimpleChunkStatisticItem, response: Response):
         with engine.db.using(engine.table_name) as table:
             hit_record_s = table.query(
                 f'array_contains(identifier,"{request.identifier}")',
-                output_fields=["*"],
+                output_fields=["id", "metadata", "text"],
             )
+        if hit_record_s:
+            df = pd.DataFrame(hit_record_s)
+            df["index_time"] = df["metadata"].apply(lambda x: x.get("index_time"))
+            df["source"] = df["metadata"].apply(lambda x: x.get("source"))
+            df_explode = df.explode("index_time")
+            g_df_by_source = df_explode.groupby(["source"])
 
-            for record in hit_record_s:
-                record.pop("identifier") if "identifier" in record.keys() else None
-                record.pop("vector") if "vector" in record.keys() else None
+            for (source,), crt_df_source in g_df_by_source:
+                crt_knowledge = dict()
+                crt_knowledge["source"] = source
+                crt_knowledge["version"] = dict()
+                g_df_by_version = crt_df_source.groupby(["index_time"])
 
-                source = record.get("metadata", {}).get("source")
-                assert source is not None, "source is None"
+                for (index_time,), crt_df_index_time in g_df_by_version:
+                    crt_knowledge["version"][index_time] = crt_df_index_time.to_dict(
+                        orient="records"
+                    )
 
-                if source not in result.keys():
-                    result[source] = []
-                result[source].append(record)
+                result.append(crt_knowledge)
 
         if result:
             return result
