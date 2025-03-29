@@ -3,7 +3,10 @@ from typing import List
 from fastapi import APIRouter, status, Response
 
 from aa_rag.engine.simple_chunk import SimpleChunk, SimpleChunkInitParams
-from aa_rag.gtypes.models.delete import SimpleChunkDeleteItem, SolutionDeleteItem
+from aa_rag.gtypes.models.delete import (
+    SimpleChunkDeleteItem,
+    SolutionDeleteItem,
+)
 from aa_rag.knowledge_base.built_in.qa import QAKnowledge
 from aa_rag.knowledge_base.built_in.solution import SolutionKnowledge
 from aa_rag.router.qa import router as qa_router
@@ -64,10 +67,7 @@ def solution(request: SolutionDeleteItem, response: Response):
             new_guides = []
             for guide in guides:
                 compatible_env = guide["compatible_env"]
-                if (
-                    compatible_env["platform"] != request.platform
-                    or compatible_env["arch"] != request.arch
-                ):
+                if compatible_env["platform"] != request.platform or compatible_env["arch"] != request.arch:
                     new_guides.append(guide)
                 else:
                     pass

@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 
 from aa_rag import setting
-from aa_rag.exceptions import handle_exception_error, handel_file_not_found_error
+from aa_rag.exceptions import (
+    handle_exception_error,
+    handel_file_not_found_error,
+)
 from aa_rag.router import qa, solution, index, retrieve, statistic, delete
 
 app = FastAPI()

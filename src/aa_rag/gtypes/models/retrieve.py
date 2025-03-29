@@ -2,7 +2,10 @@ from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 from aa_rag import setting
 from aa_rag.engine.lightrag import LightRAGInitParams, LightRAGRetrieveParams
-from aa_rag.engine.simple_chunk import SimpleChunkRetrieveParams, SimpleChunkInitParams
+from aa_rag.engine.simple_chunk import (
+    SimpleChunkRetrieveParams,
+    SimpleChunkInitParams,
+)
 from aa_rag.gtypes.enums import EngineType
 from aa_rag.gtypes.models.base import BaseResponse
 
@@ -12,28 +15,23 @@ class BaseRetrieveItem(BaseModel):
 
 
 class RetrieveItem(BaseModel):
-    engine_type: EngineType = Field(
-        default=setting.engine.type, examples=[setting.engine.type]
-    )
+    engine_type: EngineType = Field(default=setting.engine.type, examples=[setting.engine.type])
 
     model_config = ConfigDict(extra="allow")
 
 
-class SimpleChunkRetrieveItem(
-    SimpleChunkInitParams, SimpleChunkRetrieveParams, BaseRetrieveItem
-):
+class SimpleChunkRetrieveItem(SimpleChunkInitParams, SimpleChunkRetrieveParams, BaseRetrieveItem):
     pass
 
 
-class LightRAGRetrieveItem(
-    LightRAGInitParams, LightRAGRetrieveParams, BaseRetrieveItem
-):
+class LightRAGRetrieveItem(LightRAGInitParams, LightRAGRetrieveParams, BaseRetrieveItem):
     pass
 
 
 class RetrieveResponse(BaseResponse):
     message: str = Field(
-        default="Retrieval completed via BaseRetrieve", examples=["Retrieval completed"]
+        default="Retrieval completed via BaseRetrieve",
+        examples=["Retrieval completed"],
     )
 
     @field_validator("data")

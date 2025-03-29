@@ -25,7 +25,8 @@ class ParserNeedItem(OSSStoreInitParams):
     )
 
     parsing_type: ParsingType = Field(
-        default=ParsingType.MARKITDOWN, description="The parsing type of the content."
+        default=ParsingType.MARKITDOWN,
+        description="The parsing type of the content.",
     )
 
     # # Custom validator to ensure file_path and content are not both None

@@ -8,7 +8,9 @@ from aa_rag.gtypes.models.knowlege_base.solution import CompatibleEnv
 
 class BaseDeleteItem(BaseModel):
     id: str | None = Field(
-        default=None, examples=["12"], description="The id of the item to be deleted"
+        default=None,
+        examples=["12"],
+        description="The id of the item to be deleted",
     )
     ids: List[str] | None = Field(
         default=None,
@@ -32,5 +34,7 @@ class SimpleChunkDeleteItem(SimpleChunkInitParams, BaseDeleteItem):
 
 class SolutionDeleteItem(CompatibleEnv):
     id: str = Field(
-        default=..., examples=["12"], description="The id of the project to be deleted"
+        default=...,
+        examples=["12"],
+        description="The id of the project to be deleted",
     )

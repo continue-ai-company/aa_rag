@@ -8,9 +8,7 @@ from aa_rag.gtypes.models.knowlege_base.qa import (
 )
 from aa_rag.knowledge_base.built_in.qa import QAKnowledge
 
-router = APIRouter(
-    prefix="/qa", tags=["QA"], responses={404: {"description": "Not Found"}}
-)
+router = APIRouter(prefix="/qa", tags=["QA"], responses={404: {"description": "Not Found"}})
 
 
 @router.get("/")
@@ -22,7 +20,9 @@ async def root():
 
 
 @router.post(
-    "/index", response_model=QAIndexResponse, status_code=status.HTTP_201_CREATED
+    "/index",
+    response_model=QAIndexResponse,
+    status_code=status.HTTP_201_CREATED,
 )
 async def index(item: QAIndexItem, response: Response):
     qa = QAKnowledge()
@@ -49,6 +49,4 @@ async def retrieve(item: QARetrieveItem, response: Response):
         )
     else:
         response.status_code = status.HTTP_404_NOT_FOUND
-        return QARetrieveResponse(
-            response=response, message="No result found in QA Knowledge Base"
-        )
+        return QARetrieveResponse(response=response, message="No result found in QA Knowledge Base")

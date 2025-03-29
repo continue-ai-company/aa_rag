@@ -19,14 +19,14 @@ from aa_rag.gtypes.models.retrieve import (
 )
 
 router = APIRouter(
-    prefix="/retrieve", tags=["Retrieve"], responses={404: {"description": "Not found"}}
+    prefix="/retrieve",
+    tags=["Retrieve"],
+    responses={404: {"description": "Not found"}},
 )
 
 
 @router.post("/chunk", tags=["SimpleChunk"], response_model=RetrieveResponse)
-async def chunk_retrieve(
-    item: SimpleChunkRetrieveItem, response: Response
-) -> RetrieveResponse:
+async def chunk_retrieve(item: SimpleChunkRetrieveItem, response: Response) -> RetrieveResponse:
     engine = SimpleChunk(SimpleChunkInitParams(**item.model_dump()))
 
     result = engine.retrieve(SimpleChunkRetrieveParams(**item.model_dump()))
@@ -46,9 +46,7 @@ async def chunk_retrieve(
 
 
 @router.post("/lightrag", tags=["LightRAG"], response_model=RetrieveResponse)
-async def lightrag_retrieve(
-    item: LightRAGRetrieveItem, response: Response
-) -> RetrieveResponse:
+async def lightrag_retrieve(item: LightRAGRetrieveItem, response: Response) -> RetrieveResponse:
     engine = LightRAGEngine(LightRAGInitParams(**item.model_dump()))
 
     result = await engine.retrieve(LightRAGRetrieveParams(**item.model_dump()))

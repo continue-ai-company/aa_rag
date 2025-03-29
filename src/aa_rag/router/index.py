@@ -21,7 +21,9 @@ from aa_rag.gtypes.models.index import (
 from aa_rag.gtypes.models.parse import ParserNeedItem
 
 router = APIRouter(
-    prefix="/index", tags=["Index"], responses={404: {"description": "Not found"}}
+    prefix="/index",
+    tags=["Index"],
+    responses={404: {"description": "Not found"}},
 )
 
 
@@ -46,7 +48,9 @@ async def chunk_index(item: SimpleChunkIndexItem, response: Response) -> IndexRe
         )
     )
     return IndexResponse(
-        response=response, message="Indexing completed via SimpleChunkIndex", data=[]
+        response=response,
+        message="Indexing completed via SimpleChunkIndex",
+        data=[],
     )
 
 
@@ -73,5 +77,7 @@ async def lightrag_index(item: LightRAGIndexItem, response: Response) -> IndexRe
     )
 
     return IndexResponse(
-        response=response, message="Indexing completed via LightRAGIndex", data=[]
+        response=response,
+        message="Indexing completed via LightRAGIndex",
+        data=[],
     )

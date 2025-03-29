@@ -30,9 +30,7 @@ class MarkitDownParser(BaseParser):
             **kwargs: Additional keyword arguments.
         """
         self.mtd_client = MarkItDown(
-            llm_client=OpenAI(
-                base_url=setting.openai.base_url, api_key=setting.openai.api_key
-            ),
+            llm_client=OpenAI(base_url=setting.openai.base_url, api_key=setting.openai.api_key),
             llm_model=llm,
         )
 
@@ -87,7 +85,8 @@ class MarkitDownParser(BaseParser):
             )
         else:
             return Document(
-                page_content=content_str, metadata={"source": f"{source}://{file_path}"}
+                page_content=content_str,
+                metadata={"source": f"{source}://{file_path}"},
             )
 
     def _parse_content(self, content: str, **kwargs) -> Document:

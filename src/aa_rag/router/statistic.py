@@ -45,9 +45,7 @@ def knowledge(request: SimpleChunkStatisticItem, response: Response):
                 g_df_by_version = crt_df_source.groupby(["index_time"])
 
                 for (index_time,), crt_df_index_time in g_df_by_version:
-                    crt_knowledge["version"][index_time] = crt_df_index_time.to_dict(
-                        orient="records"
-                    )
+                    crt_knowledge["version"][index_time] = crt_df_index_time.to_dict(orient="records")
 
                 result.append(crt_knowledge)
 

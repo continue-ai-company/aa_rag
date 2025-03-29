@@ -23,9 +23,7 @@ class BaseParser(OSSStore):
             update_cache (bool, optional): Whether to update cache. Defaults to True.
         """
 
-        super().__init__(
-            OSSStoreInitParams(use_cache=use_cache, update_cache=update_cache)
-        )
+        super().__init__(OSSStoreInitParams(use_cache=use_cache, update_cache=update_cache))
 
     @property
     def type(self):
@@ -67,13 +65,9 @@ class BaseParser(OSSStore):
             if isinstance(file_path, PathLike):
                 file_path = [file_path]
             for _ in file_path:
-                curr_uri: PathLike | OSSResourceInfo = self.check_file_path(
-                    _, **file_path_extra_kwargs.get(_, {})
-                )
+                curr_uri: PathLike | OSSResourceInfo = self.check_file_path(_, **file_path_extra_kwargs.get(_, {}))
                 if isinstance(curr_uri, OSSResourceInfo):
-                    with tempfile.NamedTemporaryFile(
-                        delete=True, mode="wb", suffix=curr_uri.suffix
-                    ) as temp_file:
+                    with tempfile.NamedTemporaryFile(delete=True, mode="wb", suffix=curr_uri.suffix) as temp_file:
                         response = requests.get(str(curr_uri.url), stream=True)
                         response.raise_for_status()
 
@@ -100,14 +94,8 @@ class BaseParser(OSSStore):
                         if not curr_uri.hit_cache:
                             self.oss_client.put_object(
                                 Bucket=self.oss_cache_bucket,
-                                Key=str(
-                                    Path(curr_uri.cache_file_path).relative_to(
-                                        self.oss_cache_bucket
-                                    )
-                                )
-                                if curr_uri.cache_file_path.startswith(
-                                    self.oss_cache_bucket
-                                )
+                                Key=str(Path(curr_uri.cache_file_path).relative_to(self.oss_cache_bucket))
+                                if curr_uri.cache_file_path.startswith(self.oss_cache_bucket)
                                 else curr_uri.cache_file_path,
                                 Body=result[-1].page_content,
                             )
@@ -153,9 +141,7 @@ class BaseParser(OSSStore):
                 file_path = [file_path]
 
             async def process_path(path):
-                curr_uri = self.check_file_path(
-                    path, **file_path_extra_kwargs.get(path, {})
-                )
+                curr_uri = self.check_file_path(path, **file_path_extra_kwargs.get(path, {}))
                 if isinstance(curr_uri, OSSResourceInfo):
                     async with aiohttp.ClientSession() as session:
                         async with session.get(str(curr_uri.url)) as response:
@@ -171,14 +157,8 @@ class BaseParser(OSSStore):
                                     if not curr_uri.hit_cache:
                                         self.oss_client.put_object(
                                             Bucket=self.oss_cache_bucket,
-                                            Key=str(
-                                                Path(
-                                                    curr_uri.cache_file_path
-                                                ).relative_to(self.oss_cache_bucket)
-                                            )
-                                            if curr_uri.cache_file_path.startswith(
-                                                self.oss_cache_bucket
-                                            )
+                                            Key=str(Path(curr_uri.cache_file_path).relative_to(self.oss_cache_bucket))
+                                            if curr_uri.cache_file_path.startswith(self.oss_cache_bucket)
                                             else curr_uri.cache_file_path,
                                             Body=url_content.decode("utf8"),
                                         )
@@ -225,9 +205,7 @@ class BaseParser(OSSStore):
         return NotImplemented
 
     @abstractmethod
-    def _parse_content(
-        self, content: str, source: Literal["local", "oss"], **kwargs
-    ) -> Document:
+    def _parse_content(self, content: str, source: Literal["local", "oss"], **kwargs) -> Document:
         """
         Abstract method to parse content. Must be implemented by subclasses.
 

@@ -59,9 +59,7 @@ def load_env(key: str, default: Any = None):
 
 class Server(BaseModel):
     host: str = Field(default="0.0.0.0", description="The host address for the server.")
-    port: int = Field(
-        default=222, description="The port number on which the server listens."
-    )
+    port: int = Field(default=222, description="The port number on which the server listens.")
     environment: Literal["Development", "Production"] = Field(
         default=load_env("ENVIRONMENT", ("Development", "Production")),
         description="The environment in which the server is running.",
@@ -98,7 +96,8 @@ class Storage(BaseModel):
     class Milvus(BaseModel):
         uri: str = Field(
             default=load_env(
-                "STORAGE_MILVUS_URI", ("./storage/milvus.db", "http://localhost:19530")
+                "STORAGE_MILVUS_URI",
+                ("./storage/milvus.db", "http://localhost:19530"),
             ),
             description="URI for the Milvus server location.",
         )
@@ -108,9 +107,7 @@ class Storage(BaseModel):
             description="Password for the Milvus server.",
             validate_default=True,
         )
-        db_name: str = Field(
-            default="aarag", description="Database name for the Milvus server."
-        )
+        db_name: str = Field(default="aarag", description="Database name for the Milvus server.")
 
     class TinyDB(BaseModel):
         uri: str = Field(
@@ -129,9 +126,7 @@ class Storage(BaseModel):
             description="Password for the MongoDB server.",
             validate_default=True,
         )
-        db_name: str = Field(
-            default="aarag", description="Database name for the MongoDB server."
-        )
+        db_name: str = Field(default="aarag", description="Database name for the MongoDB server.")
 
     class Neo4j(BaseModel):
         uri: str = Field(
@@ -139,9 +134,7 @@ class Storage(BaseModel):
             description="URI for the Neo4j server location.",
         )
         user: str = Field(default=None, description="Username for the Neo4j server.")
-        password: SecretStr = Field(
-            default=None, description="Password for the Neo4j server."
-        )
+        password: SecretStr = Field(default=None, description="Password for the Neo4j server.")
 
         @model_validator(mode="after")
         def check(self):
@@ -153,28 +146,26 @@ class Storage(BaseModel):
             return self
 
     lancedb: LanceDB = Field(
-        default_factory=LanceDB, description="LanceDB database configuration settings."
+        default_factory=LanceDB,
+        description="LanceDB database configuration settings.",
     )
     milvus: Milvus = Field(
-        default_factory=Milvus, description="Milvus database configuration settings."
+        default_factory=Milvus,
+        description="Milvus database configuration settings.",
     )
     tinydb: TinyDB = Field(
-        default_factory=TinyDB, description="TinyDB database configuration settings."
+        default_factory=TinyDB,
+        description="TinyDB database configuration settings.",
     )
     mongodb: MongoDB = Field(
-        default_factory=MongoDB, description="MongoDB database configuration settings."
+        default_factory=MongoDB,
+        description="MongoDB database configuration settings.",
     )
 
-    neo4j: Neo4j = Field(
-        default_factory=Neo4j, description="Neo4j configuration settings."
-    )
+    neo4j: Neo4j = Field(default_factory=Neo4j, description="Neo4j configuration settings.")
 
-    mode: DBMode = Field(
-        default=DBMode.UPSERT, description="Mode of operation for the database."
-    )
-    vector: VectorDBType = Field(
-        default=VectorDBType.MILVUS, description="Type of vector database used."
-    )
+    mode: DBMode = Field(default=DBMode.UPSERT, description="Mode of operation for the database.")
+    vector: VectorDBType = Field(default=VectorDBType.MILVUS, description="Type of vector database used.")
     nosql: NoSQLDBType = Field(
         default=load_env("DB_NOSQL", (NoSQLDBType.TINYDB, NoSQLDBType.MONGODB)),
         description="Type of NoSQL database used.",
@@ -229,10 +220,12 @@ class Engine(BaseModel):
         class Retrieve(BaseModel):
             class Weight(BaseModel):
                 dense: float = Field(
-                    default=0.5, description="Weight for dense retrieval methods."
+                    default=0.5,
+                    description="Weight for dense retrieval methods.",
                 )
                 sparse: float = Field(
-                    default=0.5, description="Weight for sparse retrieval methods."
+                    default=0.5,
+                    description="Weight for sparse retrieval methods.",
                 )
 
             k: int = Field(default=3, description="Number of top results to retrieve.")
@@ -245,11 +238,10 @@ class Engine(BaseModel):
                 description="Type of retrieval strategy used.",
             )
 
-        index: Index = Field(
-            default_factory=Index, description="Index configuration settings."
-        )
+        index: Index = Field(default_factory=Index, description="Index configuration settings.")
         retrieve: Retrieve = Field(
-            default_factory=Retrieve, description="Retrieve configuration settings."
+            default_factory=Retrieve,
+            description="Retrieve configuration settings.",
         )
 
     class LightRAG(BaseModel):
@@ -264,12 +256,16 @@ class Engine(BaseModel):
         graph_storage: LightRAGGraphStorageType = Field(
             default=load_env(
                 "LIGHTRAG_GRAPH_STORAGE",
-                (LightRAGGraphStorageType.NETWORKX, LightRAGGraphStorageType.NEO4J),
+                (
+                    LightRAGGraphStorageType.NETWORKX,
+                    LightRAGGraphStorageType.NEO4J,
+                ),
             ),
             description="Type of graph storage used for LightRAG.",
         )
         llm: str = Field(
-            default="gpt-4o-mini", description="Model used for understanding text."
+            default="gpt-4o-mini",
+            description="Model used for understanding text.",
         )
         embedding: str = Field(
             default_factory=Embedding,
@@ -312,19 +308,17 @@ class Engine(BaseModel):
 
 class Retrieve(BaseModel):
     class Weight(BaseModel):
-        dense: float = Field(
-            default=0.5, description="Weight for dense retrieval methods."
-        )
-        sparse: float = Field(
-            default=0.5, description="Weight for sparse retrieval methods."
-        )
+        dense: float = Field(default=0.5, description="Weight for dense retrieval methods.")
+        sparse: float = Field(default=0.5, description="Weight for sparse retrieval methods.")
 
     type: RetrieveType = Field(
-        default=RetrieveType.HYBRID, description="Type of retrieval strategy used."
+        default=RetrieveType.HYBRID,
+        description="Type of retrieval strategy used.",
     )
     k: int = Field(default=3, description="Number of top results to retrieve.")
     weight: Weight = Field(
-        default_factory=Weight, description="Weights for different retrieval methods."
+        default_factory=Weight,
+        description="Weights for different retrieval methods.",
     )
 
 
@@ -363,21 +357,17 @@ class OSS(BaseModel):
 
 
 class Settings(BaseSettings):
-    server: Server = Field(
-        default_factory=Server, description="Server configuration settings."
-    )
-    openai: OpenAI = Field(
-        default_factory=OpenAI, description="OpenAI API configuration settings."
-    )
+    server: Server = Field(default_factory=Server, description="Server configuration settings.")
+    openai: OpenAI = Field(default_factory=OpenAI, description="OpenAI API configuration settings.")
 
-    storage: Storage = Field(
-        default_factory=Storage, description="Database configuration settings."
-    )
+    storage: Storage = Field(default_factory=Storage, description="Database configuration settings.")
     embedding: Embedding = Field(
-        default_factory=Embedding, description="Embedding model configuration settings."
+        default_factory=Embedding,
+        description="Embedding model configuration settings.",
     )
     engine: Engine = Field(
-        default_factory=Engine, description="Indexing engine configuration settings."
+        default_factory=Engine,
+        description="Indexing engine configuration settings.",
     )
     llm: LLM = Field(
         default_factory=LLM,

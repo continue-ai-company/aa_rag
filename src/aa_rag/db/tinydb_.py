@@ -81,25 +81,19 @@ class TinyDBDataBase(BaseNoSQLDataBase):
         if isinstance(mongo_query, dict):
             # handle top-level logical operators
             if "$and" in mongo_query:
-                sub_exprs = [
-                    self._build_query_mongo(sub, q) for sub in mongo_query["$and"]
-                ]
+                sub_exprs = [self._build_query_mongo(sub, q) for sub in mongo_query["$and"]]
                 expr = sub_exprs[0]
                 for e in sub_exprs[1:]:
                     expr = expr & e
                 return expr
             elif "$or" in mongo_query:
-                sub_exprs = [
-                    self._build_query_mongo(sub, q) for sub in mongo_query["$or"]
-                ]
+                sub_exprs = [self._build_query_mongo(sub, q) for sub in mongo_query["$or"]]
                 expr = sub_exprs[0]
                 for e in sub_exprs[1:]:
                     expr = expr | e
                 return expr
             elif "$nor" in mongo_query:
-                sub_exprs = [
-                    self._build_query_mongo(sub, q) for sub in mongo_query["$nor"]
-                ]
+                sub_exprs = [self._build_query_mongo(sub, q) for sub in mongo_query["$nor"]]
                 expr = sub_exprs[0]
                 for e in sub_exprs[1:]:
                     expr = expr | e
@@ -137,11 +131,7 @@ class TinyDBDataBase(BaseNoSQLDataBase):
                                 current = ~(q[field].test(lambda v, lst=val: v in lst))
                             elif op == "$exists":
                                 # check the field is None if val is False, otherwise check it is not None
-                                current = (
-                                    (q[field] is not None)
-                                    if val
-                                    else (q[field] is None)
-                                )
+                                current = (q[field] is not None) if val else (q[field] is None)
                             else:
                                 raise ValueError(f"Unsupported Operation: {op}")
                             if field_expr is None:

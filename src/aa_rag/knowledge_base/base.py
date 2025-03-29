@@ -14,9 +14,7 @@ class BaseKnowledge:
         **kwargs,
     ):
         self.llm = utils.get_llm(llm)
-        self.embedding_model, self.dimensions = utils.get_embedding_model(
-            embedding_model, return_dim=True
-        )
+        self.embedding_model, self.dimensions = utils.get_embedding_model(embedding_model, return_dim=True)
 
     @property
     @abstractmethod

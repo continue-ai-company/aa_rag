@@ -11,7 +11,9 @@ from aa_rag.gtypes.models.knowlege_base.solution import (
 from aa_rag.knowledge_base.built_in.solution import SolutionKnowledge
 
 router = APIRouter(
-    prefix="/solution", tags=["Solution"], responses={404: {"description": "Not Found"}}
+    prefix="/solution",
+    tags=["Solution"],
+    responses={404: {"description": "Not Found"}},
 )
 
 
@@ -24,7 +26,9 @@ async def root():
 
 
 @router.post(
-    "/index", response_model=SolutionIndexResponse, status_code=status.HTTP_201_CREATED
+    "/index",
+    response_model=SolutionIndexResponse,
+    status_code=status.HTTP_201_CREATED,
 )
 async def index(item: SolutionIndexItem, response: Response):
     solution = SolutionKnowledge(**item.model_dump(include={"llm", "embedding_model"}))
@@ -36,13 +40,9 @@ async def index(item: SolutionIndexItem, response: Response):
 
 @router.post("/retrieve", response_model=SolutionRetrieveResponse)
 async def retrieve(item: SolutionRetrieveItem, response: Response):
-    solution = SolutionKnowledge(
-        **item.model_dump(include={"llm", "embedding_model", "relation_db_path"})
-    )
+    solution = SolutionKnowledge(**item.model_dump(include={"llm", "embedding_model", "relation_db_path"}))
 
-    guide: Guide | None = solution.retrieve(
-        **item.model_dump(include={"env_info", "project_meta"})
-    )
+    guide: Guide | None = solution.retrieve(**item.model_dump(include={"env_info", "project_meta"}))
     if guide is None:
         response.status_code = 404
         return SolutionRetrieveResponse(
@@ -50,6 +50,4 @@ async def retrieve(item: SolutionRetrieveItem, response: Response):
             message="Guide not found",
         )
     else:
-        return SolutionRetrieveResponse(
-            response=response, data=[utils.guide2document(guide)]
-        )
+        return SolutionRetrieveResponse(response=response, data=[utils.guide2document(guide)])

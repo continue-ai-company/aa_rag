@@ -15,17 +15,13 @@ dfs_setting = setting.engine.lightrag
 # 参数模型定义
 class LightRAGInitParams(BaseModel):
     knowledge_name: str = Field(..., description="The name of the knowledge")
-    identifier: str = Field(
-        default="common", description="The identifier of the knowledge"
-    )
+    identifier: str = Field(default="common", description="The identifier of the knowledge")
 
     llm: str = Field(default=dfs_setting.llm, description="The language model to use.")
 
 
 class LightRAGIndexParams(BaseIndexParams):
-    source_data: Union[Document, List[Document]] = Field(
-        ..., description="The source data to index."
-    )
+    source_data: Union[Document, List[Document]] = Field(..., description="The source data to index.")
 
 
 class LightRAGRetrieveParams(BaseModel):
@@ -48,20 +44,14 @@ class LightRAGGenerateParams(BaseModel):
     pass
 
 
-class LightRAGEngine(
-    BaseEngine[LightRAGIndexParams, LightRAGRetrieveParams, LightRAGGenerateParams]
-):
+class LightRAGEngine(BaseEngine[LightRAGIndexParams, LightRAGRetrieveParams, LightRAGGenerateParams]):
     def __init__(
         self,
         params: LightRAGInitParams,
         embedding_model: str = dfs_setting.embedding.model,
         **kwargs,
     ):
-        namespace_prefix = (
-            f"{params.knowledge_name}__{embedding_model}__{params.identifier}".replace(
-                "-", "_"
-            )
-        )
+        namespace_prefix = f"{params.knowledge_name}__{embedding_model}__{params.identifier}".replace("-", "_")
 
         self._generate_ini_config_file()  # !! generate config.ini file because lightrag do not support specifying config file path
 
@@ -75,14 +65,10 @@ class LightRAGEngine(
             llm_model_name=params.llm,
             llm_model_func=openai_complete,
             namespace_prefix=namespace_prefix,
-            addon_params={}
-            if kwargs.get("addon_params") is None
-            else kwargs.get("addon_params"),
+            addon_params={} if kwargs.get("addon_params") is None else kwargs.get("addon_params"),
             vector_storage=dfs_setting.vector_storage.value,
             graph_storage=dfs_setting.graph_storage.value,
-            vector_db_storage_cls_kwargs={
-                "cosine_better_than_threshold": dfs_setting.cosine_threshold
-            },
+            vector_db_storage_cls_kwargs={"cosine_better_than_threshold": dfs_setting.cosine_threshold},
             log_level=10,  # DEBUG Level
         )
 
@@ -129,11 +115,7 @@ class LightRAGEngine(
         id_s = []
 
         with self.db.using(self.table_name) as table:
-            docs = (
-                [params.source_data]
-                if isinstance(params.source_data, Document)
-                else params.source_data
-            )
+            docs = [params.source_data] if isinstance(params.source_data, Document) else params.source_data
             for doc in docs:
                 doc_id = utils.calculate_md5(doc.page_content)
                 id_s.append(doc_id)
@@ -147,7 +129,9 @@ class LightRAGEngine(
         context_str = await self.rag.aquery(
             query=params.query,
             param=QueryParam(
-                mode=params.retrieve_mode, only_need_context=True, top_k=params.top_k
+                mode=params.retrieve_mode,
+                only_need_context=True,
+                top_k=params.top_k,
             ),
         )
         entity_df, rel_df = utils.markdown_extract_csv_df(context_str)
@@ -171,9 +155,7 @@ class LightRAGEngine(
             entity: str = entity.strip().replace("'", "").replace('"', "")
             entity_info = await self.rag.get_entity_info(entity)
             if entity_info:
-                source_info = await self.rag.text_chunks.get_by_id(
-                    entity_info["source_id"]
-                )
+                source_info = await self.rag.text_chunks.get_by_id(entity_info["source_id"])
                 if source_info:
                     chunk_id_s.add(source_info["full_doc_id"])
 
@@ -182,9 +164,7 @@ class LightRAGEngine(
             target: str = rel["target"].strip().replace("'", "").replace('"', "")
             rel_info = await self.rag.get_relation_info(source, target)
             if rel_info["source_id"]:
-                source_info = await self.rag.text_chunks.get_by_id(
-                    rel_info["source_id"]
-                )
+                source_info = await self.rag.text_chunks.get_by_id(rel_info["source_id"])
                 if source_info:
                     chunk_id_s.add(source_info["full_doc_id"])
 

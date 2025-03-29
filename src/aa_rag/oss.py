@@ -11,11 +11,11 @@ from aa_rag import setting, utils
 
 
 class OSSStoreInitParams(BaseModel):
-    use_cache: bool = Field(
-        default=True, examples=[True], description="Whether to use OSS cache."
-    )
+    use_cache: bool = Field(default=True, examples=[True], description="Whether to use OSS cache.")
     update_cache: bool = Field(
-        default=True, examples=[True], description="Whether to update OSS cache."
+        default=True,
+        examples=[True],
+        description="Whether to update OSS cache.",
     )
 
 
@@ -33,18 +33,14 @@ class OSSResourceInfo(BaseModel):
     @model_validator(mode="after")
     def check(self):
         if self.hit_cache:
-            assert self.cache_file_path, (
-                "The cache_file_path must be provided when hit_cache is True."
-            )
+            assert self.cache_file_path, "The cache_file_path must be provided when hit_cache is True."
 
         if self.suffix is None and self.url is not None:
             self.suffix = Path(self.url.path).suffix
 
         if not self.source_file_path.startswith(setting.oss.bucket):
             self.source_file_path = f"{setting.oss.bucket}/{self.source_file_path}"
-        if self.cache_file_path is not None and not self.cache_file_path.startswith(
-            setting.oss.cache_bucket
-        ):
+        if self.cache_file_path is not None and not self.cache_file_path.startswith(setting.oss.cache_bucket):
             self.cache_file_path = f"{setting.oss.cache_bucket}/{self.cache_file_path}"
 
         return self
@@ -63,9 +59,7 @@ class OSSStore:
         oss_bucket: str = setting.oss.bucket,
         oss_cache_bucket: str = setting.oss.cache_bucket,
         oss_access_key: str = setting.oss.access_key,
-        oss_secret_key: str = setting.oss.secret_key.get_secret_value()
-        if setting.oss.secret_key
-        else None,
+        oss_secret_key: str = setting.oss.secret_key.get_secret_value() if setting.oss.secret_key else None,
     ):
         """
         Initialize the BaseParser with OSS settings and cache options.
@@ -80,7 +74,11 @@ class OSSStore:
         """
 
         self._oss_available, self._oss_cache_available = self._validate_oss(
-            oss_endpoint, oss_bucket, oss_cache_bucket, oss_access_key, oss_secret_key
+            oss_endpoint,
+            oss_bucket,
+            oss_cache_bucket,
+            oss_access_key,
+            oss_secret_key,
         )
 
         if self.oss_available:
@@ -163,9 +161,7 @@ class OSSStore:
                 verify=oss_endpoint.startswith("https://"),
             )
         except BotoCoreError as e:
-            logging.warning(
-                f"Failed to connect to OSS service: {str(e)}. No longer use OSS."
-            )
+            logging.warning(f"Failed to connect to OSS service: {str(e)}. No longer use OSS.")
             return False, False
 
         from botocore.exceptions import ClientError
@@ -174,23 +170,17 @@ class OSSStore:
             # Validate main bucket
             oss_client.head_bucket(Bucket=oss_bucket)
         except ClientError:
-            logging.warning(
-                f"Bucket not found: {oss_bucket} in oss service. No longer use OSS."
-            )
+            logging.warning(f"Bucket not found: {oss_bucket} in oss service. No longer use OSS.")
 
         try:
             # Validate cache bucket
             oss_client.head_bucket(Bucket=oss_cache_bucket)
             return True, True
         except ClientError:
-            logging.warning(
-                f"Cache bucket not found: {oss_cache_bucket} in oss service. No longer use OSS cache."
-            )
+            logging.warning(f"Cache bucket not found: {oss_cache_bucket} in oss service. No longer use OSS cache.")
             return True, False
 
-    def check_file_path(
-        self, file_path: PathLike, **kwargs
-    ) -> PathLike | OSSResourceInfo:
+    def check_file_path(self, file_path: PathLike, **kwargs) -> PathLike | OSSResourceInfo:
         """
         Check the file path and return the appropriate resource info.
 
@@ -216,9 +206,7 @@ class OSSStore:
                     VersionId=kwargs.get("version_id", ""),
                 )
             except ClientError:
-                raise FileNotFoundError(
-                    f"File not found: {file_path} in local and bucket: {setting.oss.bucket}"
-                )
+                raise FileNotFoundError(f"File not found: {file_path} in local and bucket: {setting.oss.bucket}")
 
             md5_value = oss_file_info["ETag"].replace('"', "")
             cache_file_path = f"parsed_{md5_value}.md"
@@ -274,9 +262,7 @@ class OSSStore:
             raise FileNotFoundError(f"File not found: {file_path} in local.")
 
     def store_image(self, params: StoreImageParams) -> Document:
-        img_file_name, content_type, binary_data = (
-            utils.convert_img_base64_to_file_info(params.image, params.img_desc)
-        )
+        img_file_name, content_type, binary_data = utils.convert_img_base64_to_file_info(params.image, params.img_desc)
         img_file_path = f"image/{img_file_name}"
 
         try:
@@ -292,7 +278,8 @@ class OSSStore:
                 },
             )
             oss_info = OSSResourceInfo(
-                source_file_path=f"{self.oss_bucket}/{img_file_path}", hit_cache=False
+                source_file_path=f"{self.oss_bucket}/{img_file_path}",
+                hit_cache=False,
             )
 
         assert isinstance(oss_info, OSSResourceInfo), (

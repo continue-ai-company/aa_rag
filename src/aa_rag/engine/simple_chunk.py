@@ -23,18 +23,18 @@ dfs_setting = setting.engine.simple_chunk
 class SimpleChunkInitParams(BaseModel):
     knowledge_name: str = Field(..., description="The name of the knowledge base.")
     identifier: str = Field(
-        default="common", description="An optional identifier for the engine instance."
+        default="common",
+        description="An optional identifier for the engine instance.",
     )
 
 
 # SimpleChunk 参数模型
 class SimpleChunkIndexParams(BaseIndexParams, StoreImageParams):
-    source_data: Union[Document, List[Document]] = Field(
-        ..., description="The source data to index."
-    )
+    source_data: Union[Document, List[Document]] = Field(..., description="The source data to index.")
 
     retrieve_mode: DBMode = Field(
-        default=setting.storage.mode, description="The mode of the index operation."
+        default=setting.storage.mode,
+        description="The mode of the index operation.",
     )
 
 
@@ -44,9 +44,7 @@ class SimpleChunkRetrieveParams(BaseModel):
         default=dfs_setting.retrieve.k,
         description="The number of top results to return.",
     )
-    retrieve_mode: RetrieveType = Field(
-        default=dfs_setting.retrieve.type, description="The retrieval method."
-    )
+    retrieve_mode: RetrieveType = Field(default=dfs_setting.retrieve.type, description="The retrieval method.")
     dense_weight: float = Field(
         default=dfs_setting.retrieve.weight.dense,
         description="The weight for dense retrieval.",
@@ -63,7 +61,9 @@ class SimpleChunkGenerateParams(BaseModel):
 
 class SimpleChunk(
     BaseEngine[
-        SimpleChunkIndexParams, SimpleChunkRetrieveParams, SimpleChunkGenerateParams
+        SimpleChunkIndexParams,
+        SimpleChunkRetrieveParams,
+        SimpleChunkGenerateParams,
     ]
 ):
     @property
@@ -89,9 +89,7 @@ class SimpleChunk(
         # kwargs
         self.kwargs = kwargs
 
-        self.embeddings, self.dimension = utils.get_embedding_model(
-            embedding_model, return_dim=True
-        )
+        self.embeddings, self.dimension = utils.get_embedding_model(embedding_model, return_dim=True)
 
         # parameters that make up the table name
         self.knowledge_name = params.knowledge_name
@@ -116,7 +114,11 @@ class SimpleChunk(
         """
         assert self.table_exist, f"Table {self.table_name} does not exist."
 
-        query, top_k, retrieve_type = params.query, params.top_k, params.retrieve_mode
+        query, top_k, retrieve_type = (
+            params.query,
+            params.top_k,
+            params.retrieve_mode,
+        )
 
         match retrieve_type:
             case RetrieveType.DENSE:
@@ -235,9 +237,7 @@ class SimpleChunk(
                         ],
                     )
                 case _:
-                    raise ValueError(
-                        f"Unsupported vector database type: {vector_db.db_type}"
-                    )
+                    raise ValueError(f"Unsupported vector database type: {vector_db.db_type}")
         vector_db.create_table(self.table_name, schema=schema)
 
     def _dense_retrieve(
@@ -277,9 +277,7 @@ class SimpleChunk(
                     embedding_function=self.embeddings,
                     collection_name=table_name,
                     connection_args={
-                        **setting.storage.milvus.model_dump(
-                            include={"uri", "user", "password"}
-                        ),
+                        **setting.storage.milvus.model_dump(include={"uri", "user", "password"}),
                         "db_name": setting.storage.milvus.db_name,
                     },
                     primary_field="id",
@@ -290,14 +288,14 @@ class SimpleChunk(
 
         if only_return_retriever:
             dense_retriever = dense_retriever.as_retriever()
-            dense_retriever.search_kwargs = {
-                "expr": f'array_contains(identifier, "{self.identifier}")'
-            }
+            dense_retriever.search_kwargs = {"expr": f'array_contains(identifier, "{self.identifier}")'}
             return dense_retriever
 
         # Perform the similarity search and return the results
         result: List[Document] = dense_retriever.similarity_search(
-            query, k=top_k, expr=f'array_contains(identifier, "{self.identifier}")'
+            query,
+            k=top_k,
+            expr=f'array_contains(identifier, "{self.identifier}")',
         )
 
         return result
@@ -353,9 +351,7 @@ class SimpleChunk(
             return sparse_retriever
 
         # retrieve
-        result: List[Document] = sparse_retriever.invoke(
-            query, expr=f'array_contains(identifier, "{self.identifier}")'
-        )
+        result: List[Document] = sparse_retriever.invoke(query, expr=f'array_contains(identifier, "{self.identifier}")')
 
         return result
 
@@ -389,9 +385,7 @@ class SimpleChunk(
             retrievers=[dense_retriever, sparse_retriever],
             weights=[dense_weight, sparse_weight],
         )
-        return ensemble_retriever.invoke(
-            query, expr=f'array_contains(identifier, "{self.identifier}")'
-        )[:top_k]
+        return ensemble_retriever.invoke(query, expr=f'array_contains(identifier, "{self.identifier}")')[:top_k]
 
     def index(
         self,
@@ -418,9 +412,7 @@ class SimpleChunk(
             source_docs = source_data
 
         # split the document into chunks
-        splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size, chunk_overlap=chunk_overlap
-        )
+        splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
 
         indexed_data = splitter.split_documents(source_docs)
 
@@ -428,22 +420,15 @@ class SimpleChunk(
         img_params: StoreImageParams = StoreImageParams(**params.model_dump())
         if img_params.image and img_params.img_desc:
             oss_store_params = OSSStoreInitParams(**img_params.model_dump())
-            img_doc: Document = OSSStore(params=oss_store_params).store_image(
-                img_params
-            )
+            img_doc: Document = OSSStore(params=oss_store_params).store_image(img_params)
             indexed_data.append(img_doc)  # add image description to indexed_data
 
         # store index
 
         # detects whether the metadata has an id field. If not, it will be generated id based on page_content via md5 algorithm.
-        id_s = [
-            doc.metadata.get("id", utils.calculate_md5(doc.page_content))
-            for doc in indexed_data
-        ]
+        id_s = [doc.metadata.get("id", utils.calculate_md5(doc.page_content)) for doc in indexed_data]
 
-        text_vector_s = self.embeddings.embed_documents(
-            [_.page_content for _ in indexed_data]
-        )
+        text_vector_s = self.embeddings.embed_documents([_.page_content for _ in indexed_data])
 
         data = []
 

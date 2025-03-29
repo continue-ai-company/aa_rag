@@ -7,7 +7,11 @@ from langchain_core.prompts import ChatPromptTemplate
 from aa_rag import utils, setting
 from aa_rag.db.base import BaseNoSQLDataBase
 from aa_rag.gtypes.enums import NoSQLDBType
-from aa_rag.gtypes.models.knowlege_base.solution import CompatibleEnv, Project, Guide
+from aa_rag.gtypes.models.knowlege_base.solution import (
+    CompatibleEnv,
+    Project,
+    Guide,
+)
 from aa_rag.knowledge_base.base import BaseKnowledge
 
 
@@ -28,9 +32,7 @@ class SolutionKnowledge(BaseKnowledge):
         self.nosql_db: BaseNoSQLDataBase = utils.get_db(nosql_db)
         self.table_name = self.knowledge_name.lower()
 
-    def _is_compatible_env(
-        self, source_env_info: CompatibleEnv, target_env_info: CompatibleEnv
-    ) -> bool:
+    def _is_compatible_env(self, source_env_info: CompatibleEnv, target_env_info: CompatibleEnv) -> bool:
         """
         Determine if source_env_info is compatible with target_env_info.
 
@@ -181,13 +183,19 @@ class SolutionKnowledge(BaseKnowledge):
 
         chain = prompt_template | self.llm | StrOutputParser()
         result: str = chain.invoke(
-            {"source_procedure": source_procedure, "target_procedure": target_procedure}
+            {
+                "source_procedure": source_procedure,
+                "target_procedure": target_procedure,
+            }
         )
 
         return result
 
     def index(
-        self, env_info: Dict[str, Any], procedure: str, project_meta: Dict[str, Any]
+        self,
+        env_info: Dict[str, Any],
+        procedure: str,
+        project_meta: Dict[str, Any],
     ) -> int:
         """
         Write a solution to the knowledge base. Merge procedures if compatible, otherwise add a new guide.
@@ -205,9 +213,7 @@ class SolutionKnowledge(BaseKnowledge):
         project = self._get_project_in_db(project_meta)
         if project:
             for guide in project.guides:
-                is_compatible: bool = self._is_compatible_env(
-                    env_info_obj, guide.compatible_env
-                )
+                is_compatible: bool = self._is_compatible_env(env_info_obj, guide.compatible_env)
                 if is_compatible:
                     merged_procedure = self._merge_procedure(guide.procedure, procedure)
                     guide.procedure = merged_procedure
@@ -221,9 +227,7 @@ class SolutionKnowledge(BaseKnowledge):
 
         return self._project_to_db(project)
 
-    def retrieve(
-        self, env_info: Dict[str, Any], project_meta: Dict[str, Any]
-    ) -> Guide | None:
+    def retrieve(self, env_info: Dict[str, Any], project_meta: Dict[str, Any]) -> Guide | None:
         """
         Retrieve a guide from the knowledge base that is compatible with the given environment.
 
@@ -238,9 +242,7 @@ class SolutionKnowledge(BaseKnowledge):
         project = self._get_project_in_db(project_meta)
         if project:
             for guide in project.guides:
-                is_compatible: bool = self._is_compatible_env(
-                    env_info_obj, guide.compatible_env
-                )
+                is_compatible: bool = self._is_compatible_env(env_info_obj, guide.compatible_env)
                 if is_compatible:
                     return guide
         return None

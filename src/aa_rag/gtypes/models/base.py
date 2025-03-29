@@ -2,14 +2,18 @@ from typing import List
 
 from fastapi import Response
 from langchain_core.documents import Document
-from pydantic import BaseModel, Field, computed_field, ConfigDict, field_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    computed_field,
+    ConfigDict,
+    field_validator,
+)
 
 
 class BaseResponse(BaseModel):
     default_response_code: int = Field(default=200, exclude=True)
-    response: Response = Field(
-        default=..., exclude=True, description="The response of the API"
-    )
+    response: Response = Field(default=..., exclude=True, description="The response of the API")
 
     message: str = Field(default=...)
     data: List[Document] = Field(

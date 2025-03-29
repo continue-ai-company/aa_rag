@@ -73,13 +73,9 @@ class QAKnowledge(BaseKnowledge):
         """
 
         chunk_size = (
-            len(error_desc) * 2
-            if kwargs.get("chunk_size") is None
-            else kwargs.get("chunk_size")
+            len(error_desc) * 2 if kwargs.get("chunk_size") is None else kwargs.get("chunk_size")
         )  # ensure the chunk size is large enough to cover the whole text. do not split the text.
-        chunk_overlap = (
-            0 if kwargs.get("chunk_overlap") is None else kwargs.get("chunk_overlap")
-        )
+        chunk_overlap = 0 if kwargs.get("chunk_overlap") is None else kwargs.get("chunk_overlap")
 
         self.engine.index(
             params=SimpleChunkIndexParams(
@@ -107,30 +103,41 @@ class QAKnowledge(BaseKnowledge):
             [
                 (
                     "system",
-                    """You are a helpful assistant. I will provide you with a query question and some retrieved documents. Please select the documents that if helpful to query document or reject all documents.
-                    --Requirements--
+                    """You are a helpful assistant. I will provide you with a query question and some retrieved documents. Identify retrieved documents that are obviously not related to the query question.
+                    --Explains--
                     1. The query question and documents should be in a json format. 
                     2. The query question should be in the "query" field and the documents should be in the "documents" field.
-                    3. The "documents" field should be in a list format. Each document should have an "id" field, an "error_desc" field and a "tags" field.
-                    4. Please select the document that matching the query question most based on "error_desc" field and "tags" field of each document.  
-                    5. If you think have found the most matching document, please return the "id" field of the document.
-                    6. Do not return other information except the "id" field. The format should be in a list format.
-                    7. Please strictly follow the requirements and do not return other information.
-                        
+                    3. The "documents" field should be in a list format. Each document should have an "id" field, an "error_desc" field.
+                    
+                    --Steps--
+                    1. Identify the languages for query question and documents.error_desc.
+                    2. Use the language of documents.error_desc to translate the query question if the languages are different. 
+                    3. Use the translated query question to judge the retrieved document whether related to query question obviously based on "error_desc" field.
+                    2. If you think have found the document that obviously unrelated retrieved documents, please return the "id" field of the document.
+                    3. Do not return other information except the "id" field or language.
+                    4. Please strictly follow the steps.
+                    
                     
                     --Example 1--
                     -Input-
-                    {{"query":"代理错误","documents":[{{"id":"1","error_desc":"网络错误，无法连接 google","tags":["proxy error"]}},{{"id":"2","error_desc":"windows ping不通 https://www.baidu.com","tags":["network error","windows"]}}]}}
+                    {{"query":"代理错误","documents":[{{"id":"1","error_desc":"网络错误，无法连接 google"}},{{"id":"2","error_desc":"windows ping不通 https://www.baidu.com"}}]}}
                     
                     -Output-
-                    ["1"]
+                    {{"id":[],"language":{{"query":"zh","error_desc":"zh"}}}}
                     
                     --Example 2--
                     -Input-
-                    {{"query":"红烧肉太甜了","documents":[{{"id":"1","error_desc":"网络错误，无法连接 google","tags":["proxy error"]}},{{"id":"2","error_desc":"windows ping不通 https://www.baidu.com","tags":["network error","windows"]}}]}}
+                    {{"query":"红烧肉太甜了","documents":[{{"id":"1","error_desc":"网络错误，无法连接 google"}},{{"id":"2","error_desc":"windows ping不通 https://www.baidu.com"}}]}}
                     
                     -Output-
-                    []
+                    {{"id":["1","2"],"language":{{"query":"zh","error_desc":"zh"}}}}
+                    
+                    --Example 3--
+                    -Input-
+                    {{"query":"proxy is error caused can not to navigate network?","documents":[{{"id":"1","error_desc":"网络错误，无法连接 google"}},{{"id":"2","error_desc":"windows ping不通 https://www.baidu.com"}}]}}
+                    
+                    -Output-
+                    {{"id":[],"language":{{"query":"en","error_desc":"zh"}}}}
                     
                     --Real--
                     -Input-
@@ -146,24 +153,21 @@ class QAKnowledge(BaseKnowledge):
         info_dict = dict()
         info_dict["query"] = error_desc
         info_dict["documents"] = []
-
-        id2doc = {}
-
         for id_, each_result in enumerate(result):
             info_dict["documents"].append(
                 {
                     "id": str(id_),
                     "error_desc": each_result["page_content"],
-                    "tags": each_result["metadata"]["tags"],
+                    # "tags": each_result["metadata"]["tags"],
                 }
             )
-
-            id2doc[str(id_)] = each_result
 
         chain = prompt_template | self.llm | JsonOutputParser()
 
         hit_doc_id_s = chain.invoke({"info_json": info_dict})
 
-        result = [id2doc[doc_id] for doc_id in hit_doc_id_s]
-
-        return result
+        final_result = []
+        for id_, each_result in enumerate(result):
+            if str(id_) not in hit_doc_id_s.get("id", []):
+                final_result.append(each_result)
+        return final_result

@@ -19,9 +19,7 @@ class LanceDBDataBase(BaseVectorDataBase):
     @property
     def table(self):
         if not hasattr(self, "_table_obj"):
-            raise AttributeError(
-                "Table object is not defined, please use `get_table()` method."
-            )
+            raise AttributeError("Table object is not defined, please use `get_table()` method.")
         return self._table_obj
 
     def connect(self, **kwargs):

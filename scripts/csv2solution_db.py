@@ -35,9 +35,7 @@ def csv2db(csv_path: str, sqlite_db_path: str):
 
     duplicated_data["project_meta"] = duplicated_data.apply(f1, axis=1)
     duplicated_data["guides"] = duplicated_data.apply(f2, axis=1)
-    duplicated_data.drop(
-        columns=["os", "arch", "procedure", "url", "name"], inplace=True
-    )
+    duplicated_data.drop(columns=["os", "arch", "procedure", "url", "name"], inplace=True)
 
     import sqlite3
 
@@ -57,9 +55,7 @@ def csv2db(csv_path: str, sqlite_db_path: str):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="csv from feishu to sqlite as solution knowledge base"
-    )
+    parser = argparse.ArgumentParser(description="csv from feishu to sqlite as solution knowledge base")
 
     # 添加可选参数
     parser.add_argument("csvpath")

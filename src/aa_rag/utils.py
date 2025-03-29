@@ -39,9 +39,7 @@ def calculate_md5(input_string: str) -> str:
     return md5_hash.hexdigest()
 
 
-def get_embedding_model(
-    model_name: str, return_dim: bool = False
-) -> Embeddings | tuple[Embeddings, int]:
+def get_embedding_model(model_name: str, return_dim: bool = False) -> Embeddings | tuple[Embeddings, int]:
     """
     Get the embedding model based on the model name.
     Args:
@@ -53,9 +51,7 @@ def get_embedding_model(
         If return_dim is True, also returns the number of dimensions.
 
     """
-    assert setting.openai.api_key, (
-        "OpenAI API key is required for using OpenAI embeddings."
-    )
+    assert setting.openai.api_key, "OpenAI API key is required for using OpenAI embeddings."
     embeddings = OpenAIEmbeddings(
         model=model_name,
         dimensions=1536,
@@ -69,9 +65,7 @@ def get_embedding_model(
 
 
 def get_llm(model_name: str) -> BaseChatModel:
-    assert setting.openai.api_key, (
-        "OpenAI API key is required for using OpenAI embeddings."
-    )
+    assert setting.openai.api_key, "OpenAI API key is required for using OpenAI embeddings."
     model = ChatOpenAI(
         model=model_name,
         api_key=setting.openai.api_key,
@@ -120,9 +114,7 @@ def get_uuid():
 async def parse_content(params: ParserNeedItem) -> List[Document]:
     if params.parsing_type == ParsingType.MARKITDOWN:
         parser = MarkitDownParser()
-        source_data = await parser.aparse(
-            **ParserNeedItem(**params.model_dump(exclude={"parsing_type"})).model_dump()
-        )
+        source_data = await parser.aparse(**ParserNeedItem(**params.model_dump(exclude={"parsing_type"})).model_dump())
     else:
         raise ValueError(f"Invalid parsing type: {params.parsing_type}")
 
@@ -181,9 +173,7 @@ def markdown_extract_csv_df(markdown_content):
     return dfs["entities"], dfs["relationships"]
 
 
-def convert_img_base64_to_file_info(
-    base64_str: str, extra_calculate_value: str = None
-) -> Tuple[str, str, bytes]:
+def convert_img_base64_to_file_info(base64_str: str, extra_calculate_value: str = None) -> Tuple[str, str, bytes]:
     """
     将 Base64 字符串保存为图片文件名，文件名使用 Base64 数据的 MD5 哈希值
 
@@ -214,11 +204,7 @@ def convert_img_base64_to_file_info(
     binary_data = base64.b64decode(data)
 
     # 计算二进制数据的 MD5 哈希值
-    value = (
-        binary_data
-        if extra_calculate_value is None
-        else binary_data + extra_calculate_value.encode("utf-8")
-    )
+    value = binary_data if extra_calculate_value is None else binary_data + extra_calculate_value.encode("utf-8")
     md5_hash = hashlib.md5(value).hexdigest()
 
     # 确定文件扩展名
@@ -236,5 +222,6 @@ def convert_img_base64_to_file_info(
 
 def guide2document(guide: Guide) -> Document:
     return Document(
-        page_content=guide.procedure, metadata={"compatible_env": guide.compatible_env}
+        page_content=guide.procedure,
+        metadata={"compatible_env": guide.compatible_env},
     )

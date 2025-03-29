@@ -34,9 +34,7 @@ class MilvusDataBase(BaseVectorDataBase):
             uri = uri
         else:
             Path(uri).parent.mkdir(parents=True, exist_ok=True)
-        super().__init__(
-            uri=uri, user=user, password=password, db_name=db_name, **kwargs
-        )
+        super().__init__(uri=uri, user=user, password=password, db_name=db_name, **kwargs)
 
     @property
     def connection(self) -> MilvusClient:
@@ -62,10 +60,14 @@ class MilvusDataBase(BaseVectorDataBase):
             else:
                 index_params = self.connection.prepare_index_params()
                 index_params.add_index(
-                    field_name="vector", index_type="AUTOINDEX", metric_type="L2"
+                    field_name="vector",
+                    index_type="AUTOINDEX",
+                    metric_type="L2",
                 )
                 self.connection.create_collection(
-                    collection_name=table_name, schema=schema, index_params=index_params
+                    collection_name=table_name,
+                    schema=schema,
+                    index_params=index_params,
                 )
         else:
             raise ValueError(f"Collection {table_name} already exists")
@@ -92,17 +94,13 @@ class MilvusDataBase(BaseVectorDataBase):
     def insert(self, data: List[dict], **kwargs):
         """Insert data into collection"""
         assert self.using_collection_name, "Collection not loaded. Use using() first"
-        res = self.connection.insert(
-            collection_name=self.using_collection_name, data=data
-        )
+        res = self.connection.insert(collection_name=self.using_collection_name, data=data)
         return res
 
     def delete(self, where: str, **kwargs):
         """Delete entities with boolean expression"""
         assert self.using_collection_name, "Collection not loaded. Use using() first"
-        return self.connection.delete(
-            self.using_collection_name, filter=where, **kwargs
-        )
+        return self.connection.delete(self.using_collection_name, filter=where, **kwargs)
 
     def upsert(self, data: list[dict] | DataFrame, **kwargs):
         """Upsert data into collection with JSON merge support"""
@@ -110,26 +108,18 @@ class MilvusDataBase(BaseVectorDataBase):
 
         def update_old_json_with_new(new_data):
             # 获取字段描述
-            fields = self.connection.describe_collection(self.using_collection_name)[
-                "fields"
-            ]
+            fields = self.connection.describe_collection(self.using_collection_name)["fields"]
 
             # 健壮的主键获取（修复问题4）
-            primary_keys = [
-                field["name"] for field in fields if field.get("is_primary", False)
-            ]
+            primary_keys = [field["name"] for field in fields if field.get("is_primary", False)]
             if not primary_keys:
                 raise ValueError("Collection has no primary key")
             primary_key = primary_keys[0]
 
-            json_fields = [
-                field["name"] for field in fields if field["type"] == DataType.JSON
-            ]
+            json_fields = [field["name"] for field in fields if field["type"] == DataType.JSON]
 
             # 获取所有需要更新的字段（修复问题3）
-            all_fields = list(
-                {primary_key}.union(json_fields, *[d.keys() for d in new_data])
-            )
+            all_fields = list({primary_key}.union(json_fields, *[d.keys() for d in new_data]))
 
             # 构建查询表达式（修复潜在的类型问题）
             pk_values = [str(d[primary_key]) for d in new_data if primary_key in d]
@@ -137,15 +127,11 @@ class MilvusDataBase(BaseVectorDataBase):
                 return new_data  # 无主键直接插入新数据
 
             # 查询旧数据（包含所有必要字段）
-            old_data = self.query(
-                expr=f"{primary_key} in {pk_values}", output_fields=all_fields
-            )
+            old_data = self.query(expr=f"{primary_key} in {pk_values}", output_fields=all_fields)
             old_data_map = {str(d[primary_key]): d for d in old_data}
 
             # 递归合并函数（修复问题2）
-            def deep_merge(
-                original: Union[Dict, List, None], new: Union[Dict, List]
-            ) -> Union[Dict, List]:
+            def deep_merge(original: Union[Dict, List, None], new: Union[Dict, List]) -> Union[Dict, List]:
                 if original is None:
                     original = {} if isinstance(new, dict) else []
                 merged = copy.deepcopy(original)
@@ -173,9 +159,7 @@ class MilvusDataBase(BaseVectorDataBase):
 
                 # only merge json fields
                 for field in json_fields:
-                    new_item[field] = deep_merge(
-                        old_item.get(field), new_item.get(field)
-                    )
+                    new_item[field] = deep_merge(old_item.get(field), new_item.get(field))
 
                 merged_data.append(new_item)
 
@@ -189,9 +173,7 @@ class MilvusDataBase(BaseVectorDataBase):
         processed_data = update_old_json_with_new(data)
 
         # 执行upsert
-        return self.connection.upsert(
-            collection_name=self.using_collection_name, data=processed_data
-        )
+        return self.connection.upsert(collection_name=self.using_collection_name, data=processed_data)
 
     def overwrite(self, data: list[dict] | DataFrame, **kwargs):
         assert self.using_collection_name, "Collection not loaded. Use using() first"
