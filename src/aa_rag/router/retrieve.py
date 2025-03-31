@@ -10,9 +10,7 @@ from aa_rag.engine.simple_chunk import (
     SimpleChunkRetrieveParams,
     SimpleChunkInitParams,
 )
-from aa_rag.gtypes.enums import EngineType
 from aa_rag.gtypes.models.retrieve import (
-    RetrieveItem,
     RetrieveResponse,
     SimpleChunkRetrieveItem,
     LightRAGRetrieveItem,

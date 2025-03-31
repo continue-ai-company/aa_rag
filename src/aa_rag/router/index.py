@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, Response, status
 
 from aa_rag import utils
 from aa_rag.engine.lightrag import (
@@ -11,9 +11,7 @@ from aa_rag.engine.simple_chunk import (
     SimpleChunkInitParams,
     SimpleChunkIndexParams,
 )
-from aa_rag.gtypes.enums import EngineType
 from aa_rag.gtypes.models.index import (
-    IndexItem,
     SimpleChunkIndexItem,
     IndexResponse,
     LightRAGIndexItem,

@@ -1,5 +1,4 @@
 from fastapi import status, Response
-from langchain_core.documents import Document
 from starlette.responses import JSONResponse
 
 from aa_rag.gtypes.models.base import BaseResponse
