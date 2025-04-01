@@ -1,4 +1,4 @@
-from typing import List, cast, Union
+from typing import List, cast, Union, Tuple
 
 import pandas as pd
 from langchain.retrievers import EnsembleRetriever
@@ -8,6 +8,7 @@ from langchain_core.retrievers import BaseRetriever
 from langchain_milvus import Milvus
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pydantic import BaseModel, Field
+from rank_bm25 import BM25Okapi
 
 from aa_rag import setting, utils
 from aa_rag.db.base import BaseDataBase, BaseVectorDataBase
@@ -136,6 +137,20 @@ class SimpleChunk(
                 raise ValueError(f"Invalid retrieve method: {retrieve_type}")
 
         return [doc.model_dump(include={"metadata", "page_content"}) for doc in result]
+
+    # def calculate_score(self, retrieve_type: RetrieveType, query: str, docs: List[Document]):
+    #     match retrieve_type:
+    #         case RetrieveType.DENSE:
+    #
+    #     sparse_retriever = BM25Retriever.from_documents(docs, preprocess_func=utils.split_multilingual)
+    #     sparse_retriever.k = len(docs)
+    #
+    #     score_s: list = sparse_retriever.vectorizer.get_scores(sparse_retriever.preprocess_func(query))
+    #
+    #     for order, doc in enumerate(docs):
+    #         doc.metadata.update({"score": score_s[order]})
+    #
+    #     return docs
 
     def _get_table(self, db_obj: BaseDataBase) -> str:
         """
@@ -292,13 +307,16 @@ class SimpleChunk(
             return dense_retriever
 
         # Perform the similarity search and return the results
-        result: List[Document] = dense_retriever.similarity_search(
+        result: List[Tuple[Document, float]] = dense_retriever.similarity_search_with_relevance_scores(
             query,
             k=top_k,
             expr=f'array_contains(identifier, "{self.identifier}")',
         )
 
-        return result
+        for doc, score in result:
+            doc.metadata["dense_score"] = score
+
+        return [doc for doc, _ in result]
 
     def _bm25_retrieve(
         self,
@@ -344,7 +362,8 @@ class SimpleChunk(
                 )
                 .tolist()
             )
-        sparse_retriever = BM25Retriever.from_documents(all_doc_s)
+
+        sparse_retriever = BM25Retriever.from_documents(all_doc_s, preprocess_func=utils.split_multilingual)
         sparse_retriever.k = top_k
 
         if only_return_retriever:
@@ -352,6 +371,13 @@ class SimpleChunk(
 
         # retrieve
         result: List[Document] = sparse_retriever.invoke(query, expr=f'array_contains(identifier, "{self.identifier}")')
+
+        # calculate sparse retrieval score
+        corpus = list(map(lambda x: utils.split_multilingual(x.page_content), result))
+        vectorizer = BM25Okapi(corpus)
+        sparse_score_s = vectorizer.get_scores(utils.split_multilingual(query))
+        for score, doc in zip(sparse_score_s, result):
+            doc.metadata["sparse_score"] = score
 
         return result
 
@@ -385,7 +411,29 @@ class SimpleChunk(
             retrievers=[dense_retriever, sparse_retriever],
             weights=[dense_weight, sparse_weight],
         )
-        return ensemble_retriever.invoke(query, expr=f'array_contains(identifier, "{self.identifier}")')[:top_k]
+
+        ensemble_result: List[Document] = ensemble_retriever.invoke(
+            query, expr=f'array_contains(identifier, "{self.identifier}")'
+        )[:top_k]
+
+        # calculate dense retrieval score
+        dense_score_result: List[Tuple[Document, float]] = (
+            dense_retriever.vectorstore.similarity_search_with_relevance_scores(query)
+        )
+        dense_score_mapping = {}
+        for doc, score in dense_score_result:
+            dense_score_mapping[doc.page_content] = score
+        for doc in ensemble_result:
+            doc.metadata["dense_score"] = dense_score_mapping.get(doc.page_content, 0)
+
+        # calculate sparse retrieval score
+        corpus = list(map(lambda x: utils.split_multilingual(x.page_content), ensemble_result))
+        vectorizer = BM25Okapi(corpus)
+        sparse_score_s = vectorizer.get_scores(utils.split_multilingual(query))
+        for score, doc in zip(sparse_score_s, ensemble_result):
+            doc.metadata["sparse_score"] = score
+
+        return ensemble_result
 
     def index(
         self,

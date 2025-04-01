@@ -60,7 +60,7 @@ def solution(request: SolutionDeleteItem, response: Response):
 
             try:
                 guides = hit_record[0]["guides"]
-            except:
+            except Exception:
                 response.status_code = status.HTTP_404_NOT_FOUND
                 return
 

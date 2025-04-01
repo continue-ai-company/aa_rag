@@ -1,4 +1,6 @@
+import base64
 import hashlib
+import mimetypes
 import re
 import uuid
 from io import StringIO
@@ -20,8 +22,6 @@ from aa_rag.gtypes.enums import VectorDBType, NoSQLDBType, ParsingType
 from aa_rag.gtypes.models.knowlege_base.solution import Guide
 from aa_rag.gtypes.models.parse import ParserNeedItem
 from aa_rag.parse.markitdown import MarkitDownParser
-import base64
-import mimetypes
 
 
 def calculate_md5(input_string: str) -> str:
@@ -225,3 +225,29 @@ def guide2document(guide: Guide) -> Document:
         page_content=guide.procedure,
         metadata={"compatible_env": guide.compatible_env},
     )
+
+
+def split_multilingual(text: str):
+    import re
+    import jieba
+    from nltk.stem import PorterStemmer
+
+    # 初始化工具
+    stemmer = PorterStemmer()
+    jieba.initialize()  # 结巴分词初始化
+
+    # 修改分词函数，移除停用词过滤步骤
+    def tokenize_mixed(text):
+        tokens = []
+        pattern = re.compile(r"([a-zA-Z0-9]+)|([\u4e00-\u9fa5]+)")
+        for match in re.finditer(pattern, text):
+            eng_num, chn = match.groups()
+            if eng_num:
+                eng_tokens = re.findall(r"[a-zA-Z]+|\d+", eng_num)
+                tokens.extend([stemmer.stem(t.lower()) for t in eng_tokens])
+            elif chn:
+                tokens.extend(jieba.lcut(chn))  # 直接保留所有中文分词结果
+        return tokens
+
+    result = tokenize_mixed(text)
+    return result
