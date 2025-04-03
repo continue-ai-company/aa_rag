@@ -152,7 +152,7 @@ class LightRAGEngine(BaseEngine[LightRAGIndexParams, LightRAGRetrieveParams, Lig
         chunk_id_s = set()
         metadata_s: List = list()  # file source
         for entity in entity_df["entity"].values:
-            entity: str = entity.strip().replace("'", "").replace('"', "")
+            entity = entity.strip().replace("'", "").replace('"', "")
             entity_info = await self.rag.get_entity_info(entity)
             if entity_info:
                 source_info = await self.rag.text_chunks.get_by_id(entity_info["source_id"])

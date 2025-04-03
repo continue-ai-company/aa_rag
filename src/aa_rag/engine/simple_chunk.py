@@ -3,8 +3,10 @@ from typing import List, cast, Union, Tuple
 import pandas as pd
 from langchain.retrievers import EnsembleRetriever
 from langchain_community.retrievers import BM25Retriever
+from langchain_community.vectorstores import LanceDB
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
+from langchain_core.vectorstores import VectorStoreRetriever
 from langchain_milvus import Milvus
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pydantic import BaseModel, Field
@@ -121,6 +123,7 @@ class SimpleChunk(
             params.retrieve_mode,
         )
 
+        result: BaseRetriever | List[Document] | None
         match retrieve_type:
             case RetrieveType.DENSE:
                 result = self._dense_retrieve(query, top_k)
@@ -135,8 +138,9 @@ class SimpleChunk(
                 )
             case _:
                 raise ValueError(f"Invalid retrieve method: {retrieve_type}")
+        assert isinstance(result, List | None), f"Result must be a list, not {type(result)}"
 
-        return [doc.model_dump(include={"metadata", "page_content"}) for doc in result]
+        return [doc.model_dump(include={"metadata", "page_content"}) for doc in result] if result else []
 
     # def calculate_score(self, retrieve_type: RetrieveType, query: str, docs: List[Document]):
     #     match retrieve_type:
@@ -260,7 +264,7 @@ class SimpleChunk(
         query: str,
         top_k: int = dfs_setting.retrieve.k,
         only_return_retriever=False,
-    ) -> BaseRetriever | List[Document]:
+    ) -> VectorStoreRetriever | List[Document]:
         """
         Perform a dense retrieval of documents based on the query.
 
@@ -270,7 +274,7 @@ class SimpleChunk(
             only_return_retriever (bool, optional): If True, only return the retriever object. Defaults to False.
 
         Returns:
-            BaseRetriever | List[Document]: The retriever object if only_return_retriever is True, otherwise a list of retrieved documents.
+            VectorStoreRetriever | List[Document]: The retriever object if only_return_retriever is True, otherwise a list of retrieved documents.
         """
         vector_db, table_name = self.db, self.table_name
         assert isinstance(vector_db, BaseVectorDataBase), (
@@ -278,17 +282,17 @@ class SimpleChunk(
         )
 
         # Get the appropriate retriever based on the vector database type
+        dense_vectorstore: Milvus | LanceDB
         match self.db.db_type:
             case VectorDBType.LANCE:
-                from langchain_community.vectorstores import LanceDB
 
-                dense_retriever = LanceDB(
+                dense_vectorstore = LanceDB(
                     connection=vector_db.connection,
                     table_name=table_name,
                     embedding=self.embeddings,
                 )
             case VectorDBType.MILVUS:
-                dense_retriever = Milvus(
+                dense_vectorstore = Milvus(
                     embedding_function=self.embeddings,
                     collection_name=table_name,
                     connection_args={
@@ -302,12 +306,12 @@ class SimpleChunk(
                 raise ValueError(f"Unsupported vector database type: {self.db.db_type}")
 
         if only_return_retriever:
-            dense_retriever = dense_retriever.as_retriever()
+            dense_retriever = dense_vectorstore.as_retriever()
             dense_retriever.search_kwargs = {"expr": f'array_contains(identifier, "{self.identifier}")'}
             return dense_retriever
 
         # Perform the similarity search and return the results
-        result: List[Tuple[Document, float]] = dense_retriever.similarity_search_with_relevance_scores(
+        result: List[Tuple[Document, float]] = dense_vectorstore.similarity_search_with_relevance_scores(
             query,
             k=top_k,
             expr=f'array_contains(identifier, "{self.identifier}")',
@@ -323,7 +327,7 @@ class SimpleChunk(
         query: str,
         top_k: int = dfs_setting.retrieve.k,
         only_return_retriever=False,
-    ) -> BaseRetriever | List[Document] | None:
+    ) -> BM25Retriever | List[Document] | None:
         """
         Perform a BM25 retrieval of documents based on the query.
 
@@ -333,7 +337,7 @@ class SimpleChunk(
             only_return_retriever (bool, optional): If True, only return the retriever object. Defaults to False.
 
         Returns:
-            BaseRetriever | List[Document|None: The retriever object if only_return_retriever is True, otherwise a list of retrieved documents. If build BM25 retriever failed, return None.
+            BM25Retriever | List[Document|None: The retriever object if only_return_retriever is True, otherwise a list of retrieved documents. If build BM25 retriever failed, return None.
         """
         vector_db, table_name = self.db, self.table_name
         assert isinstance(vector_db, BaseVectorDataBase), (
@@ -403,12 +407,15 @@ class SimpleChunk(
         dense_retriever = self._dense_retrieve(query, top_k, only_return_retriever=True)
         sparse_retriever = self._bm25_retrieve(query, top_k, only_return_retriever=True)
 
+        dense_retriever = cast(VectorStoreRetriever, dense_retriever)
+
+
         if sparse_retriever is None:
             return []
 
         # combine the all retrievers
         ensemble_retriever = EnsembleRetriever(
-            retrievers=[dense_retriever, sparse_retriever],
+            retrievers=[dense_retriever, sparse_retriever],  # type: ignore
             weights=[dense_weight, sparse_weight],
         )
 

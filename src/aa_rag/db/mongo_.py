@@ -118,7 +118,7 @@ class MongoDBDataBase(BaseNoSQLDataBase):
         return False
 
     @staticmethod
-    def _build_query_mongo(mongo_query: dict) -> dict:
+    def _build_query_mongo(mongo_query: dict | None) -> dict:
         """
         For MongoDB, the query condition already adheres to MongoDB's query syntax.
         Therefore, this method returns the original query (or an empty dict if None).
@@ -135,7 +135,7 @@ class MongoDBDataBase(BaseNoSQLDataBase):
             raise ValueError("Mongo query must be a dictionary")
         return mongo_query
 
-    def select(self, query: dict = None):
+    def select(self, query: dict | None = None):
         """
         Query the collection using MongoDB query syntax.
 
@@ -152,7 +152,7 @@ class MongoDBDataBase(BaseNoSQLDataBase):
         # find() returns a Cursor; convert it to a list to retrieve all results.
         return list(self.collection.find(filter_query))
 
-    def update(self, update_data: dict, query: dict = None):
+    def update(self, update_data: dict, query: dict | None = None):
         """
         Update documents in the collection that match the MongoDB query condition.
 
@@ -172,7 +172,7 @@ class MongoDBDataBase(BaseNoSQLDataBase):
         result = self.collection.update_many(filter_query, {"$set": update_data})
         return result.modified_count
 
-    def delete(self, query: dict = None):
+    def delete(self, query: dict | None = None):
         """
         Delete documents in the collection that match the MongoDB query condition.
 

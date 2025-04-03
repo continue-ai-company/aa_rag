@@ -173,7 +173,7 @@ def markdown_extract_csv_df(markdown_content):
     return dfs["entities"], dfs["relationships"]
 
 
-def convert_img_base64_to_file_info(base64_str: str, extra_calculate_value: str = None) -> Tuple[str, str, bytes]:
+def convert_img_base64_to_file_info(base64_str: str, extra_calculate_value: str|None = None) -> Tuple[str, str, bytes]:
     """
     将 Base64 字符串保存为图片文件名，文件名使用 Base64 数据的 MD5 哈希值
 
@@ -198,7 +198,7 @@ def convert_img_base64_to_file_info(base64_str: str, extra_calculate_value: str 
         mime_type = header.split(";")[0].split(":")[1]
     else:
         data = base64_str
-        mime_type = None
+        mime_type = ''
 
     # 解码 Base64 数据
     binary_data = base64.b64decode(data)

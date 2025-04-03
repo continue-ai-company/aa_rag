@@ -33,7 +33,7 @@ class TinyDBDataBase(BaseNoSQLDataBase):
         """
         get table object by table name, return self for with statement.
         """
-        self.table = self.connection.table(table_name, **kwargs)
+        self.table: Table = self.connection.table(table_name, **kwargs)
         return self
 
     def table_list(self):
@@ -61,7 +61,7 @@ class TinyDBDataBase(BaseNoSQLDataBase):
     def close(self):
         self.connection.close()
 
-    def _build_query_mongo(self, mongo_query: dict, q: Query = None):
+    def _build_query_mongo(self, mongo_query: dict, q: Query | None = None):
         """
         Convert MongoDB query syntax to TinyDB query expressions.
 
@@ -151,7 +151,7 @@ class TinyDBDataBase(BaseNoSQLDataBase):
         else:
             raise ValueError("Mongo Query Condition Must Be A Dict")
 
-    def select(self, query: dict = None):
+    def select(self, query: dict | None = None):
         """
         Query the interface and receive MongoDB query syntax.
         Args:
@@ -161,12 +161,14 @@ class TinyDBDataBase(BaseNoSQLDataBase):
             query = {"age": {"$gt": 30}, "$or": [{"name": "Alice"}, {"name": "Bob"}]}
             results = db.select(query)
         """
+        assert self.table, "Table is not set, please use `using` method to set the table."
+
         if query is None or not query:
             return self.table.all()
         query_obj = self._build_query_mongo(query)
         return self.table.search(query_obj)
 
-    def update(self, update_data: dict, query: dict = None):
+    def update(self, update_data: dict, query: dict | None = None):
         """
         Update records that meet MongoDB query criteria.
 
@@ -178,13 +180,14 @@ class TinyDBDataBase(BaseNoSQLDataBase):
         Returns:
             update_result: Usually an updated record identification list.
         """
+        assert self.table, "Table is not set, please use `using` method to set the table."
         if query is None or not query:
             # If no query conditions are specified, all records will be updated.
             return self.table.update(update_data)
         query_obj = self._build_query_mongo(query)
         return self.table.update(update_data, query_obj)
 
-    def delete(self, query: dict = None):
+    def delete(self, query: dict|None = None):
         """
         Delete records that meet MongoDB query criteria.
 
@@ -195,6 +198,7 @@ class TinyDBDataBase(BaseNoSQLDataBase):
         Returns:
             delete_result: Usually a list of deleted records.
         """
+        assert self.table, "Table is not set, please use `using` method to set the table."
         if query is None or not query:
             # If no query conditions are specified, all records will be deleted.
             return self.table.remove()

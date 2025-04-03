@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Iterable, List, Union, Dict, Literal
 
 import aiohttp
-import requests
+import requests  # type: ignore[import-untyped]
 from langchain_core.documents import Document
 
 from aa_rag.oss import OSSStore, OSSStoreInitParams, OSSResourceInfo
@@ -37,9 +37,9 @@ class BaseParser(OSSStore):
 
     def parse(
         self,
-        file_path: PathLike | Iterable[PathLike] = None,
-        content: str | Iterable[str] = None,
-        file_path_extra_kwargs: Dict = None,
+        file_path: PathLike | Iterable[PathLike] | None = None,
+        content: str | Iterable[str]|None = None,
+        file_path_extra_kwargs: Dict|None = None,
         **kwargs,
     ) -> List[Document]:
         """
@@ -114,9 +114,9 @@ class BaseParser(OSSStore):
 
     async def aparse(
         self,
-        file_path: Union[PathLike, Iterable[PathLike]] = None,
-        content: Union[str, Iterable[str]] = None,
-        file_path_extra_kwargs: Dict = None,
+        file_path: Union[PathLike, Iterable[PathLike]]|None = None,
+        content: Union[str, Iterable[str]]|None = None,
+        file_path_extra_kwargs: Dict|None = None,
         **kwargs,
     ) -> List[Document]:
         """

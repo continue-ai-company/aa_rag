@@ -103,7 +103,7 @@ class Storage(BaseModel):
         )
         user: str = Field(default="", description="Username for the Milvus server.")
         password: SecretStr = Field(
-            default="",
+            default=SecretStr(""),
             description="Password for the Milvus server.",
             validate_default=True,
         )
@@ -122,7 +122,7 @@ class Storage(BaseModel):
         )
         user: str = Field(default="", description="Username for the MongoDB server.")
         password: SecretStr = Field(
-            default="",
+            default=SecretStr(""),
             description="Password for the MongoDB server.",
             validate_default=True,
         )
@@ -133,8 +133,8 @@ class Storage(BaseModel):
             default=load_env("STORAGE_NEO4J_URI", (None, "bolt://localhost:7687")),
             description="URI for the Neo4j server location.",
         )
-        user: str = Field(default=None, description="Username for the Neo4j server.")
-        password: SecretStr = Field(default=None, description="Password for the Neo4j server.")
+        user: str | None = Field(default=None, description="Username for the Neo4j server.")
+        password: SecretStr = Field(default=SecretStr(""), description="Password for the Neo4j server.")
 
         @model_validator(mode="after")
         def check(self):
@@ -267,7 +267,7 @@ class Engine(BaseModel):
             default="gpt-4o-mini",
             description="Model used for understanding text.",
         )
-        embedding: str = Field(
+        embedding: Embedding = Field(
             default_factory=Embedding,
             description="Model used for generating text embeddings.",
         )

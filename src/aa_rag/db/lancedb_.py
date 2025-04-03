@@ -49,7 +49,7 @@ class LanceDBDataBase(BaseVectorDataBase):
     def drop_table(self, table_name):
         return self.connection.drop_table(table_name)
 
-    def select(self, where: str = None, **kwargs) -> DataFrame:
+    def select(self, where: str|None = None, **kwargs) -> DataFrame:
         return self.table.search().where(where).to_pandas()
 
     def insert(self, data: list[dict] | DataFrame, **kwargs):

@@ -23,8 +23,8 @@ class OSSResourceInfo(BaseModel):
     url: Optional[HttpUrl] = Field(default=None, description="A temp url from oss.")
     source_file_path: str = Field(..., description="The source file name.")
     hit_cache: bool = Field(..., description="Whether the url is from cache.")
-    cache_file_path: str = Field(default=None, description="The cache file name.")
-    version_id: str = Field(
+    cache_file_path: str | None = Field(default=None, description="The cache file name.")
+    version_id: str | None = Field(
         default=None,
         description="The version id of the file. If hit cache, the version id belong cache file, otherwise, source file.",
     )
@@ -59,7 +59,7 @@ class OSSStore:
         oss_bucket: str = setting.oss.bucket,
         oss_cache_bucket: str = setting.oss.cache_bucket,
         oss_access_key: str = setting.oss.access_key,
-        oss_secret_key: str = setting.oss.secret_key.get_secret_value() if setting.oss.secret_key else None,
+            oss_secret_key: str = setting.oss.secret_key.get_secret_value() if setting.oss.secret_key else '',
     ):
         """
         Initialize the BaseParser with OSS settings and cache options.
@@ -180,7 +180,7 @@ class OSSStore:
             logging.warning(f"Cache bucket not found: {oss_cache_bucket} in oss service. No longer use OSS cache.")
             return True, False
 
-    def check_file_path(self, file_path: PathLike, **kwargs) -> PathLike | OSSResourceInfo:
+    def check_file_path(self, file_path: PathLike | str, **kwargs) -> PathLike | OSSResourceInfo:
         """
         Check the file path and return the appropriate resource info.
 
@@ -231,7 +231,7 @@ class OSSStore:
                     hit_cache = False
             else:
                 target_bucket = self.oss_bucket
-                target_file_path = file_path
+                target_file_path = str(file_path)
                 target_version_id = oss_file_info.get("VersionId")
 
                 hit_cache = False

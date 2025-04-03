@@ -97,7 +97,7 @@ class BaseVectorDataBase(BaseDataBase, ABC):
         return NotImplemented
 
     @abstractmethod
-    def query(self, expr: str = None, **kwargs):
+    def query(self, expr: str | None = None, **kwargs):
         return NotImplemented
 
 
@@ -112,5 +112,5 @@ class BaseNoSQLDataBase(BaseDataBase, ABC):
         return NotImplemented
 
     @abstractmethod
-    def select(self, query: dict = None):
+    def select(self, query: dict|None = None):
         return NotImplemented

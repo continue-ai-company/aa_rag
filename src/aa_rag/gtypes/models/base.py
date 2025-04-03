@@ -30,8 +30,8 @@ class BaseResponse(BaseModel):
         ],
     )
 
-    @computed_field(return_type=int, examples=[200])
     @property
+    @computed_field(return_type=int, examples=[200])
     def code(self):
         return self.response.status_code or self.default_response_code
 

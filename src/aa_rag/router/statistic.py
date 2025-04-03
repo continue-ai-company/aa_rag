@@ -90,10 +90,10 @@ def solution(response: Response, project_name: str | None = None):
         for record in hit_docs_s:
             record.pop("_id") if "_id" in record.keys() else None
 
-            project_name = record.get("name")
-            if project_name not in result.keys():
-                result[project_name] = {}
-            result[project_name] = record
+            crt_project_name: str = record["name"]
+            if crt_project_name not in result.keys():
+                result[crt_project_name] = {}
+            result[crt_project_name] = record
 
     if hit_docs_s:
         pass

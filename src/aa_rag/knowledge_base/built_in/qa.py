@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List, Any, Dict
 
 from langchain_core.documents import Document
 from langchain_core.output_parsers import JsonOutputParser
@@ -88,7 +88,7 @@ class QAKnowledge(BaseKnowledge):
             )
         )
 
-    def retrieve(self, error_desc: str, tags: List[str] = None) -> List[Any]:
+    def retrieve(self, error_desc: str, tags: List[str] | None = None) -> List[Any]:
         """
         Retrieve the QA information.
         Args:
@@ -150,9 +150,9 @@ class QAKnowledge(BaseKnowledge):
             ]
         )
 
-        info_dict = dict()
+        info_dict: Dict[str, Any] = dict()
         info_dict["query"] = error_desc
-        info_dict["documents"] = []
+        info_dict["documents"] = list()
         for id_, each_result in enumerate(result):
             info_dict["documents"].append(
                 {
