@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## Unreleased
+
+### Continuous Integration
+
+- Add GitHub release configuration to contributors list
+  ([`8233153`](https://github.com/continue-ai-company/aa_rag/commit/823315343a8acc86d0249a3cadadc82beb332fd2))
+
+- Add GitHub release configuration to contributors list
+  ([`7321591`](https://github.com/continue-ai-company/aa_rag/commit/73215919ed4dfd8c21810bc82ca7277e39ddc773))
+
+
 ## v0.4.0 (2025-04-08)
 
 ### Bug Fixes
