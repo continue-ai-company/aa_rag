@@ -1,7 +1,12 @@
 # CHANGELOG
 
 
-## Unreleased
+## v0.4.1 (2025-04-08)
+
+### Bug Fixes
+
+- Add unit tests for add_numbers function
+  ([`31a554d`](https://github.com/continue-ai-company/aa_rag/commit/31a554dcb26f96fa429d786100bb4975fbba0d40))
 
 ### Continuous Integration
 
