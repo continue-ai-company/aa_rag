@@ -1,3 +1,4 @@
+name: Release to GitHub
 on:
     push:
         branches:
