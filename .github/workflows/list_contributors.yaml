@@ -1,3 +1,4 @@
+name: List Contributors in README
 on:
     push:
         branches:
