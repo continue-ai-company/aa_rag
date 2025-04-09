@@ -68,7 +68,7 @@ def get_llm(model_name: str) -> BaseChatModel:
     assert setting.openai.api_key, "OpenAI API key is required for using OpenAI embeddings."
     model = ChatOpenAI(
         model=model_name,
-        api_key=setting.openai.api_key,
+        api_key=setting.openai.api_key.get_secret_value(),
         base_url=setting.openai.base_url,
         temperature=0,
     )
