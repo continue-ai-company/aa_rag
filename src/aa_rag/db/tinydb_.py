@@ -161,7 +161,7 @@ class TinyDBDataBase(BaseNoSQLDataBase):
             query = {"age": {"$gt": 30}, "$or": [{"name": "Alice"}, {"name": "Bob"}]}
             results = db.select(query)
         """
-        assert self.table, "Table is not set, please use `using` method to set the table."
+        assert self.table is not None, "Table is not set, please use `using` method to set the table."
 
         if query is None or not query:
             return self.table.all()
@@ -180,7 +180,7 @@ class TinyDBDataBase(BaseNoSQLDataBase):
         Returns:
             update_result: Usually an updated record identification list.
         """
-        assert self.table, "Table is not set, please use `using` method to set the table."
+        assert self.table is not None, "Table is not set, please use `using` method to set the table."
         if query is None or not query:
             # If no query conditions are specified, all records will be updated.
             return self.table.update(update_data)
@@ -198,7 +198,7 @@ class TinyDBDataBase(BaseNoSQLDataBase):
         Returns:
             delete_result: Usually a list of deleted records.
         """
-        assert self.table, "Table is not set, please use `using` method to set the table."
+        assert self.table is not None, "Table is not set, please use `using` method to set the table."
         if query is None or not query:
             # If no query conditions are specified, all records will be deleted.
             return self.table.remove()
