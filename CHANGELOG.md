@@ -1,6 +1,44 @@
 # CHANGELOG
 
 
+## v0.4.2 (2025-04-09)
+
+### Bug Fixes
+
+- Fixed a bug in tinydb where assertions could not pass when table is empty
+  ([`7078074`](https://github.com/continue-ai-company/aa_rag/commit/7078074820c52157437fe3318001f84168394fe6))
+
+- Improve code readability and add conflict check for workflows
+  ([`98db479`](https://github.com/continue-ai-company/aa_rag/commit/98db4791a63a4ccb99a92aaf366111dea26c7ae0))
+
+- Secret value for OpenAI API key is not a valid str in utils.py
+  ([`23cbb48`](https://github.com/continue-ai-company/aa_rag/commit/23cbb48e1462893d13315a38fe30d3ea84acc8f8))
+
+- Update assets in semantic_release when tag
+  ([`69b029c`](https://github.com/continue-ai-company/aa_rag/commit/69b029cfbb68c6ed8e216cccaa3acacadde755ce))
+
+- Update dependencies to latest versions and adjust version constraints
+  ([`d3295e6`](https://github.com/continue-ai-company/aa_rag/commit/d3295e696205c73cbeed008d0f155705e91f2110))
+
+### Code Style
+
+- Some format.
+  ([`4ac02c3`](https://github.com/continue-ai-company/aa_rag/commit/4ac02c35e310a135672a884125cef229138187fa))
+
+### Continuous Integration
+
+- Disable workflow list_contributors
+  ([`cfb8415`](https://github.com/continue-ai-company/aa_rag/commit/cfb841597cf88a85ae683cd5b5b6e65d9550a379))
+
+- Disable workflow release
+  ([`1131796`](https://github.com/continue-ai-company/aa_rag/commit/11317963769628bc4b0512e4a806fe14b3ffc75a))
+
+### Testing
+
+- Add local mode test suite.
+  ([`3258ded`](https://github.com/continue-ai-company/aa_rag/commit/3258ded8727048a231c0c5300bebadce61915d61))
+
+
 ## v0.4.1 (2025-04-08)
 
 ### Bug Fixes
