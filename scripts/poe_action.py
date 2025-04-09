@@ -163,7 +163,7 @@ def git_commit(workflow_name: str, action: str):
         subprocess.run(
             ["git", "commit", "-m", commit_message], check=True, capture_output=True, text=True
         )
-        logging.getLogger().success("Changes committed successfully")
+        logging.getLogger().success("Changes committed successfully")  # type: ignore
     except subprocess.CalledProcessError as e:
         logging.error(f"Git operation failed: {e.stderr}")
 
@@ -203,7 +203,7 @@ def toggle_workflow(action: str, name: str, commit: bool = False):
         check_workflow_secrets(name)
     if commit:
         git_commit(name, action)
-    logging.getLogger().success(f"Successfully {action}d {name} workflow")
+    logging.getLogger().success(f"Successfully {action}d {name} workflow")  # type: ignore
 
 
 def main():
