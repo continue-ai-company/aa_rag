@@ -1,6 +1,25 @@
 # CHANGELOG
 
 
+## v0.4.3 (2025-04-25)
+
+### Bug Fixes
+
+- Add user and password parameters to MongoDB connection
+  ([`6fe4fe4`](https://github.com/continue-ai-company/aa_rag/commit/6fe4fe4d73ddae4619dcea23c77d8547e5efd178))
+
+### Testing
+
+- Enable OSS index and retrieval tests
+  ([`fc5f5fd`](https://github.com/continue-ai-company/aa_rag/commit/fc5f5fd60eba895aed3fd0202a317e6e3111896e))
+
+- Test access to MCP.
+  ([`5fd26d6`](https://github.com/continue-ai-company/aa_rag/commit/5fd26d6fe432bb017ee53927ba39323f4e30c3da))
+
+- Update local chunk test to delete multiple knowledge IDs
+  ([`57765b7`](https://github.com/continue-ai-company/aa_rag/commit/57765b7fd092f76e3ff0a9c5af6e6a4f720fbc25))
+
+
 ## v0.4.2 (2025-04-09)
 
 ### Bug Fixes
