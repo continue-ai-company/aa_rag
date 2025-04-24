@@ -78,14 +78,14 @@ class TestChunk:
             json={"identifier": "test_identifier", "knowledge_name": "test"}
         )
         assert statistic_response.status_code == 200
-        knowledge_id = statistic_response.json()[0]["version"].popitem()[1][0]["id"]
-
-        # 删除指定的 ID
-        delete_response = client.post(
-            "/delete/knowledge",
-            json={"id": knowledge_id, "knowledge_name": "test"}
-        )
-        assert delete_response.status_code == 204
+        # 删除这两个 ID
+        for _ in statistic_response.json():
+            knowledge_id = _["version"].popitem()[1][0]["id"]
+            delete_response = client.post(
+                "/delete/knowledge",
+                json={"id": knowledge_id, "knowledge_name": "test"}
+            )
+            assert delete_response.status_code == 204
 
         # 验证删除后统计数据中不再包含该 ID
         updated_statistic_response = client.post(
