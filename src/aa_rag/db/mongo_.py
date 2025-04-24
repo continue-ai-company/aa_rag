@@ -13,6 +13,8 @@ class MongoDBDataBase(BaseNoSQLDataBase):
     def __init__(
         self,
         uri: str = setting.storage.mongodb.uri,
+            user: str = setting.storage.mongodb.user,
+            password=setting.storage.mongodb.password,
         db_name: str = setting.storage.mongodb.db_name,
         **kwargs,
     ):
@@ -25,7 +27,7 @@ class MongoDBDataBase(BaseNoSQLDataBase):
             **kwargs: Additional keyword arguments
         """
 
-        super().__init__(uri=uri, db_name=db_name, **kwargs)
+        super().__init__(uri=uri, db_name=db_name, user=user, password=password.get_secret_value(), **kwargs)
 
     def connect(self, **kwargs):
         """Establish and return a MongoDB client connection."""
@@ -35,8 +37,19 @@ class MongoDBDataBase(BaseNoSQLDataBase):
             raise ImportError(
                 "MongoDB can only be enabled on the online service, please execute `pip install aa-rag[online]`."
             )
-        client = MongoClient(kwargs.get("uri"))
 
+        if kwargs.get("user"):
+            import urllib.parse
+
+            username = urllib.parse.quote_plus(kwargs.get("user"))
+            password = urllib.parse.quote_plus(kwargs.get("password"))
+
+            uri: str = kwargs.get("uri")
+            uri = uri.replace("mongodb://", f"mongodb://{username}:{password}@")
+        else:
+            uri = kwargs.get("uri")
+
+        client = MongoClient(uri)
         return client[kwargs.get("db_name")]
 
     def create_table(self, collection_name: str, **kwargs):

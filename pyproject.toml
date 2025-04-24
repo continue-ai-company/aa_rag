@@ -24,7 +24,8 @@ dependencies = [
     "pydantic-settings==2.8.1",
     "jieba==0.42.1",
     "nltk==3.9.1",
-    "boto3"
+    "boto3",
+    "fastmcp>=2.2.0",
 ]
 
 [build-system]
