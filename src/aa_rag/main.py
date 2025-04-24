@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastmcp import FastMCP
 
 from aa_rag import setting
 from aa_rag.exceptions import (
@@ -33,6 +34,8 @@ def startup():
 
     uvicorn.run(app, host=setting.server.host, port=setting.server.port)
 
-
 if __name__ == "__main__":
+    mcp = FastMCP.from_fastapi(app, name="AARAG")
+
+    mcp.run()
     startup()

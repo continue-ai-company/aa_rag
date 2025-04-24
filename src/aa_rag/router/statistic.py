@@ -79,6 +79,24 @@ def qa(response: Response):
 @solution_router.get("/statistic")
 @router.get("/solution")
 def solution(response: Response, project_name: str | None = None):
+    """
+    Retrieves statistical information about solutions stored in the knowledge base.
+
+    This function queries the `SolutionKnowledge` database to fetch records based on
+    the provided project name. If no project name is specified, it retrieves all records.
+    The results are returned as a dictionary where the keys are project names and the
+    values are the corresponding project data.
+
+    Args:
+        response (Response): The FastAPI response object used to set the status code.
+        project_name (str | None, optional): The name of the project to filter the results.
+            If not provided, all projects are retrieved.
+
+    Returns:
+        Dict[str, Dict]: A dictionary containing project names as keys and their
+        corresponding data as values. If no records are found, the response status
+        code is set to 404.
+    """
     result: Dict[str, Dict] = {}
     solution_obj = SolutionKnowledge()
 
