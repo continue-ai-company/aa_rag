@@ -21,27 +21,27 @@ class TestChunk:
         assert resp.status_code == 200
         assert resp.json()["data"][0]['metadata']['source'] == 'local://resources/如何本地环境配置.txt'
 
-    # def test_index_oss(self, client):
-    #     params = {
-    #         "knowledge_name": "test",
-    #         "file_path": "user_manual/create_project.md",
-    #         "identifier": "test_identifier",
-    #     }
-    #
-    #     resp = client.post("/index/chunk", json=params)
-    #     assert resp.status_code == 201
-    #
-    # def test_retrieve_oss_success(self, client):
-    #     params = {
-    #         "knowledge_name": "test",
-    #         "query": "如何创建 JS 版的项目啊？",
-    #         "identifier": "test_identifier"
-    #     }
-    #
-    #     resp = client.post("/retrieve/chunk", json=params)
-    #
-    #     assert resp.status_code == 200
-    #     assert resp.json()["data"][0]['metadata']['source'] == 'oss://aarag/user_manual/create_project.md'
+    def test_index_oss(self, client):
+        params = {
+            "knowledge_name": "test",
+            "file_path": "user_manual/create_project.md",
+            "identifier": "test_identifier",
+        }
+
+        resp = client.post("/index/chunk", json=params)
+        assert resp.status_code == 201
+
+    def test_retrieve_oss_success(self, client):
+        params = {
+            "knowledge_name": "test",
+            "query": "如何创建 JS 版的项目啊？",
+            "identifier": "test_identifier"
+        }
+
+        resp = client.post("/retrieve/chunk", json=params)
+
+        assert resp.status_code == 200
+        assert resp.json()["data"][0]['metadata']['source'] == 'oss://aarag/user_manual/create_project.md'
 
     def test_retrieve_not_found(self, client):
         # Input that will cause the retrieval to not find a guide
